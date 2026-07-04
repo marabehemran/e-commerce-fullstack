@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon app.js"
+    "start:dev": "nodemon app.js",
+    "start:prod": "cross-env NODE_ENV=production node app.js"
   },
   "keywords": [],
   "author": "",
@@ -14,8 +15,12 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
+    "express-validator": "^7.3.2",
     "mongoose": "^9.7.3",
     "morgan": "^1.11.0",
     "slugify": "^1.6.9"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }

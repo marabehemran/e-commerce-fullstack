@@ -1,7 +1,7 @@
 const slugify = require("slugify");
 const asyncHandler = require("express-async-handler");
 const Category = require("../models/categoryModel");
-
+const ApiError = require("../utils/ApiError");
 
 /**
  *  @desc    get all categories
@@ -17,23 +17,21 @@ exports.getCategories = asyncHandler(async (req, res) => {
   res.status(200).json({ result: categories.length, page, data: categories });
 });
 
-
 /**
  *  @desc    get categories by id
  *  @route   /api/v1/categories/:id
  *  @method  get
  *  @access  public
  */
-exports.getCategory = asyncHandler(async (req, res) => {
+exports.getCategory = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const category = await Category.findById(id);
   if (category) {
     res.status(200).json({ data: category });
   } else {
-    res.status(404).json({ message: `no category for this id ${id}` });
+    return next(new ApiError(`no category for this id ${id}`, 404));
   }
 });
-
 
 /**
  *  @desc    Create category
@@ -47,14 +45,13 @@ exports.createCategory = asyncHandler(async (req, res) => {
   res.status(201).json({ data: category });
 });
 
-
 /**
  *  @desc    Update categories by id
  *  @route    /api/v1/categories/:id
  *  @method  PUT
  *  @access  private
  */
-exports.updateCategory = asyncHandler(async (req, res) => {
+exports.updateCategory = asyncHandler(async (req, res,next) => {
   const { id } = req.params;
   const { name } = req.body;
 
@@ -66,7 +63,7 @@ exports.updateCategory = asyncHandler(async (req, res) => {
   if (category) {
     res.status(200).json({ data: category });
   } else {
-    res.status(404).json({ message: `no category for this id ${id}` });
+    return next(new ApiError(`no category for this id ${id}`, 404));
   }
 });
 
@@ -76,12 +73,12 @@ exports.updateCategory = asyncHandler(async (req, res) => {
  *  @method  PUT
  *  @access  private
  */
-exports.deleteCategory = asyncHandler(async (req, res) => {
+exports.deleteCategory = asyncHandler(async (req, res,next) => {
   const { id } = req.params;
   const category = await Category.findByIdAndDelete(id);
-   if (category) {
+  if (category) {
     res.status(204).send();
   } else {
-    res.status(404).json({ message: `no category for this id ${id}` });
+    return next(new ApiError(`no category for this id ${id}`, 404));
   }
 });
