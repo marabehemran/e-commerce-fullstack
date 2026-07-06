@@ -51,7 +51,7 @@ exports.createCategory = asyncHandler(async (req, res) => {
  *  @method  PUT
  *  @access  private
  */
-exports.updateCategory = asyncHandler(async (req, res,next) => {
+exports.updateCategory = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { name } = req.body;
 
@@ -73,7 +73,7 @@ exports.updateCategory = asyncHandler(async (req, res,next) => {
  *  @method  PUT
  *  @access  private
  */
-exports.deleteCategory = asyncHandler(async (req, res,next) => {
+exports.deleteCategory = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const category = await Category.findByIdAndDelete(id);
   if (category) {
