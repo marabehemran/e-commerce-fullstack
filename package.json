@@ -19,7 +19,10 @@
     "express-validator": "^7.3.2",
     "mongoose": "^9.7.3",
     "morgan": "^1.11.0",
-    "slugify": "^1.6.9"
+    "multer": "^2.2.0",
+    "sharp": "^0.35.3",
+    "slugify": "^1.6.9",
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
@@ -31,7 +34,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "prettier": "^3.9.4"
   }
 }

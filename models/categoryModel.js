@@ -1,21 +1,36 @@
 const mongoose = require("mongoose");
 
-const categorySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Category requored"],
-    unique: [true, "Category must be unique"],
-    minlength: [3, "Too short category name"],
-    maxlength: [32, "To long category name"],
+const categorySchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Category requored"],
+      unique: [true, "Category must be unique"],
+      minlength: [3, "Too short category name"],
+      maxlength: [32, "To long category name"],
+    },
+    slug: {
+      type: String,
+      lowercase: true,
+    },
+    image: String,
   },
-  slug:{
-    type:String,
-    lowercase:true,
-  },
-  image:String
+  { timestamps: true },
+);
 
-},{timestamps:true});
+const setImageURL = (doc) => {
+  if (doc.image) {
+    const imageUrl = `${process.env.BASE_URL}/categories/${doc.image}`;
+    doc.image = imageUrl;
+  }
+};
 
+categorySchema.post("init", (doc) => {
+  setImageURL(doc);
+});
+categorySchema.post("save", (doc) => {
+  setImageURL(doc);
+});
 
 const CategoryModel = mongoose.model("Category", categorySchema);
 
