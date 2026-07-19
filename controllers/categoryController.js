@@ -4,26 +4,26 @@ const { v4: uuidv4 } = require("uuid");
 const asyncHandler = require("express-async-handler");
 
 const factory = require("./handlersFactory");
-const {uploadSingleImage}=require("../middlewares/uploadImageMiddleware")
+const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 const ApiError = require("../utils/ApiError");
 const Category = require("../models/categoryModel");
-
 
 //upload single image
 exports.uploadCategoryImage = uploadSingleImage("image");
 
-//image processing 
+//image processing
 exports.resizeImage = asyncHandler(async (req, res, next) => {
   const filename = `category-${uuidv4()}-${Date.now()}.jpeg`;
-  await sharp(req.file.buffer)
-    .resize(600, 600)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`uploads/categories/${filename}`);
+  if (req.file) {
+    await sharp(req.file.buffer)
+      .resize(600, 600)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`uploads/categories/${filename}`);
 
-  req.body.image = filename;
+    req.body.image = filename;
+  }
 
-  next();
 });
 
 /**
