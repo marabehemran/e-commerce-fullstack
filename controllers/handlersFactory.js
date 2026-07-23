@@ -1,6 +1,6 @@
-const asyncHandler = require('express-async-handler');
-const ApiError = require('../utils/ApiError');
-const ApiFeatures = require('../utils/apiFeatures');
+const asyncHandler = require("express-async-handler");
+const ApiError = require("../utils/ApiError");
+const ApiFeatures = require("../utils/apiFeatures");
 
 exports.deleteOne = (Model) =>
   asyncHandler(async (req, res, next) => {
@@ -10,6 +10,8 @@ exports.deleteOne = (Model) =>
     if (!document) {
       return next(new ApiError(`No document for this id ${id}`, 404));
     }
+
+    
     res.status(204).send();
   });
 
@@ -21,9 +23,10 @@ exports.updateOne = (Model) =>
 
     if (!document) {
       return next(
-        new ApiError(`No document for this id ${req.params.id}`, 404)
+        new ApiError(`No document for this id ${req.params.id}`, 404),
       );
     }
+    
     res.status(200).json({ data: document });
   });
 
@@ -33,17 +36,24 @@ exports.createOne = (Model) =>
     res.status(201).json({ data: newDoc });
   });
 
-exports.getOne = (Model) =>
+exports.getOne = (Model, populationOpt) =>
   asyncHandler(async (req, res, next) => {
     const { id } = req.params;
-    const document = await Model.findById(id);
+    //build query
+    let query = Model.findById(id);
+    if (populationOpt) {
+      query = query.populate(populationOpt);
+    }
+
+    //execute query
+    const document = await query;
     if (!document) {
       return next(new ApiError(`No document for this id ${id}`, 404));
     }
     res.status(200).json({ data: document });
   });
 
-exports.getAll = (Model, modelName = '') =>
+exports.getAll = (Model, modelName = "") =>
   asyncHandler(async (req, res) => {
     let filter = {};
     if (req.filterObj) {

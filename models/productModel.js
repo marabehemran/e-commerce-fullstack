@@ -67,14 +67,19 @@ const productSchema = new mongoose.Schema(
       default: 0,
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    //to enable virtual populate
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
 // Mongoose query middleware
 productSchema.pre(/^find/, function (next) {
   this.populate({
-    path: 'category',
-    select: 'name -_id',
+    path: "category",
+    select: "name -_id",
   });
 });
 
@@ -92,13 +97,20 @@ const setImageURL = (doc) => {
     doc.images = imagesList;
   }
 };
+
+productSchema.virtual("reviews", {
+  ref: "Review",
+  foreignField: "product",
+  localField: "_id",
+});
+
 // findOne, findAll and update
-productSchema.post('init', (doc) => {
+productSchema.post("init", (doc) => {
   setImageURL(doc);
 });
 
 // create
-productSchema.post('save', (doc) => {
+productSchema.post("save", (doc) => {
   setImageURL(doc);
 });
 
