@@ -109,11 +109,6 @@ function App() {
           />
 
           <Route
-            path="/manageupdatebrand"
-            element={<ManageUpdateBrandPage />}
-          />
-
-          <Route
             path="/manageupdatesubcategory"
             element={<ManageUpdateSubCategoryPage />}
           />
@@ -122,9 +117,14 @@ function App() {
             path="/manageupdatecategory/:id"
             element={<ManageUpdateCategoryPage />}
           />
+          
+          <Route
+            path="/manageupdatebrand/:id"
+            element={<ManageUpdateBrandPage />}
+          />
 
           <Route
-            path="/manageupdatecoupon"
+            path="/manageupdatecoupon/:id"
             element={<ManageUpdateCouponPage />}
           />
 

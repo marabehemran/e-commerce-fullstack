@@ -19,13 +19,9 @@ function ManagementAllCategories() {
   const dispatch = useDispatch();
 
   const [name, setName] = useState("");
-
   const [image, setImage] = useState(null);
-
   const [previewUrl, setPreviewUrl] = useState(null);
-
   const [currentPage, setCurrentPage] = useState(1);
-
   const [createError, setCreateError] = useState(null);
 
   const categories = useSelector(
