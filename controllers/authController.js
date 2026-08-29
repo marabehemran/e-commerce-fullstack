@@ -65,7 +65,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
     return next(
       new ApiError(
         "You are not login,please login to get access this route",
-        404,
+        401,
       ),
     );
   }

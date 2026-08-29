@@ -85,6 +85,34 @@ exports.createProduct = factory.createOne(Product);
  */
 exports.updateProduct = factory.updateOne(Product);
 
+exports.prepareProductUpdateData = (req, res, next) => {
+    if (req.body.colors !== undefined) {
+        if (req.body.colors === "") {
+            req.body.colors = [];
+        } else if (!Array.isArray(req.body.colors)) {
+            req.body.colors = [req.body.colors];
+        }
+    }
+
+    if (req.body.subCategories !== undefined) {
+        if (req.body.subCategories === "") {
+            req.body.subCategories = [];
+        } else if (!Array.isArray(req.body.subCategories)) {
+            req.body.subCategories = [req.body.subCategories];
+        }
+    }
+
+    if (req.body.brand === "") {
+        req.body.brand = null;
+    }
+
+    if (req.body.priceAfterDiscount === "") {
+        req.body.priceAfterDiscount = null;
+    }
+
+    next();
+};
+
 /**
  *  @desc    Delete product by id
  *  @route    /api/v1/products/:id

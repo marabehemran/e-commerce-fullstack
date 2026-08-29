@@ -5,15 +5,20 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "nodemon app.js",
-    "start:prod": "cross-env NODE_ENV=production node app.js"
+    "start:prod": "cross-env NODE_ENV=production node app.js",
+    "seed:arabic": "node utils/dummyData/arabicBigSeeder.js -i",
+    "seed:destroy": "node utils/dummyData/arabicBigSeeder.js -d"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@faker-js/faker": "^10.6.0",
     "bcryptjs": "^3.0.3",
     "colors": "^1.4.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
@@ -25,6 +30,7 @@
     "nodemailer": "^9.0.3",
     "sharp": "^0.35.3",
     "slugify": "^1.6.9",
+    "stripe": "^22.3.2",
     "uuid": "^14.0.1"
   },
   "devDependencies": {

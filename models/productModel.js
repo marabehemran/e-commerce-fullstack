@@ -59,7 +59,7 @@ const productSchema = new mongoose.Schema(
     },
     ratingsAverage: {
       type: Number,
-      min: [1, "rating must be above or equal 1"],
+      min: [0, "rating must be above or equal 0"],
       max: [5, "rating must be below or equal 5"],
     },
     ratingsQuantity: {
@@ -76,10 +76,10 @@ const productSchema = new mongoose.Schema(
 );
 
 // Mongoose query middleware
-productSchema.pre(/^find/, function (next) {
+productSchema.pre(/^find/, function () {
   this.populate({
     path: "category",
-    select: "name -_id",
+    select: "name",
   });
 });
 

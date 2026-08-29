@@ -7,13 +7,14 @@ const {
 } = require("../utils/validators/productValidator");
 
 const {
-  getProducts,
-  getProduct,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  uploadProductImages,
-  resizeProductImages,
+    getProducts,
+    getProduct,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    uploadProductImages,
+    resizeProductImages,
+    prepareProductUpdateData,
 } = require("../controllers/productController");
 
 const reviewRoute=require("./reviewRoute")
@@ -45,13 +46,13 @@ router
     authService.protect,
     authService.allowedTo("admin", "manager"),
     uploadProductImages,
-    resizeProductImages,
+      resizeProductImages, prepareProductUpdateData,
     updateProductValidator,
     updateProduct,
   )
   .delete(
     authService.protect,
-    authService.allowedTo("admin"),
+      authService.allowedTo("admin", "manager"),
     deleteProductValidator,
     deleteProduct,
   );

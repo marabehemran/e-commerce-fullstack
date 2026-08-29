@@ -15,7 +15,10 @@ const router = express.Router();
 
 router.use(authService.protect, authService.allowedTo("user"));
 
-router.route("/").post(addAddressValidator,addAddress).get(getLoggedUserAddresses);
+router
+  .route("/")
+  .post(addAddressValidator, addAddress)
+  .get(getLoggedUserAddresses);
 
 router.delete("/:addressId", removeAddress);
 

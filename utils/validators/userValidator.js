@@ -86,14 +86,22 @@ exports.updateUserValidator = [
   body("phone")
     .optional()
     .isMobilePhone(["ar-PS", "ar-JO"])
-    .withMessage("Invalid phone number, only Palestinian or Jordanian numbers"),
+    .withMessage(
+      "Invalid phone number, only Palestinian or Jordanian numbers",
+    ),
 
   body("profileImg").optional(),
 
   body("role")
     .optional()
-    .isIn(["user", "admin"])
-    .withMessage("Role must be user or admin"),
+    .isIn(["user", "manager", "admin"])
+    .withMessage("Role must be user, manager or admin"),
+
+  body("active")
+    .optional()
+    .isBoolean()
+    .withMessage("Active must be true or false")
+    .toBoolean(),
 
   validatorMiddleware,
 ];

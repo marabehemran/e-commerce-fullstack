@@ -18,7 +18,8 @@ exports.deleteOne = (Model) =>
 exports.updateOne = (Model) =>
   asyncHandler(async (req, res, next) => {
     const document = await Model.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
+        new: true, runValidators: true,
+
     });
 
     if (!document) {
@@ -54,25 +55,44 @@ exports.getOne = (Model, populationOpt) =>
   });
 
 exports.getAll = (Model, modelName = "") =>
-  asyncHandler(async (req, res) => {
-    let filter = {};
-    if (req.filterObj) {
-      filter = req.filterObj;
-    }
-    // Build query
-    const documentsCounts = await Model.countDocuments();
-    const apiFeatures = new ApiFeatures(Model.find(filter), req.query)
-      .paginate(documentsCounts)
-      .filter()
-      .search(modelName)
-      .limitFields()
-      .sort();
+    asyncHandler(async (req, res) => {
+        let filter = {};
 
-    // Execute query
-    const { mongooseQuery, paginationResult } = apiFeatures;
-    const documents = await mongooseQuery;
+        if (req.filterObj) {
+            filter = req.filterObj;
+        }
 
-    res
-      .status(200)
-      .json({ results: documents.length, paginationResult, data: documents });
-  });
+        // Count documents AFTER applying filter and search
+        const countFeatures = new ApiFeatures(
+            Model.find(filter),
+            req.query,
+        )
+            .filter()
+            .search(modelName);
+
+        const filteredDocumentsCount =
+            await countFeatures.mongooseQuery.countDocuments();
+
+        // Build query
+        const apiFeatures = new ApiFeatures(
+            Model.find(filter),
+            req.query,
+        )
+            .filter()
+            .search(modelName)
+            .sort()
+            .limitFields()
+            .paginate(filteredDocumentsCount);
+
+        // Execute query
+        const { mongooseQuery, paginationResult } =
+            apiFeatures;
+
+        const documents = await mongooseQuery;
+
+        res.status(200).json({
+            results: documents.length,
+            paginationResult,
+            data: documents,
+        });
+    });

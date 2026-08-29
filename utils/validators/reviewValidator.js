@@ -35,26 +35,53 @@ exports.getReviewValidator = [
 ];
 
 exports.updateReviewValidator = [
-  check('id')
-    .isMongoId()
-    .withMessage('Invalid Review id format')
-    .custom((val, { req }) =>
-      // Check review ownership before update
-      Review.findById(val).then((review) => {
-        if (!review) {
-          return Promise.reject(new Error(`There is no review with id ${val}`));
-        }
+    check("id")
+        .isMongoId()
+        .withMessage("Invalid Review id format")
+        .custom((val, { req }) =>
+            Review.findById(val).then((review) => {
+                if (!review) {
+                    return Promise.reject(
+                        new Error(`There is no review with id ${val}`),
+                    );
+                }
 
-        if (review.user._id.toString() !== req.user._id.toString()) {
-          return Promise.reject(
-            new Error(`Your are not allowed to perform this action`)
-          );
-        }
-      })
-    ),
-  validatorMiddleware,
+                if (
+                    review.user._id.toString() !==
+                    req.user._id.toString()
+                ) {
+                    return Promise.reject(
+                        new Error(
+                            "You are not allowed to perform this action",
+                        ),
+                    );
+                }
+            }),
+        ),
+
+    check("title").optional(),
+
+    check("ratings")
+        .optional()
+        .isFloat({ min: 1, max: 5 })
+        .withMessage(
+            "Ratings value must be between 1 to 5",
+        ),
+
+    check("user")
+        .not()
+        .exists()
+        .withMessage("You are not allowed to change review user"),
+
+    check("product")
+        .not()
+        .exists()
+        .withMessage(
+            "You are not allowed to change review product",
+        ),
+
+    validatorMiddleware,
 ];
-
 exports.deleteReviewValidator = [
   check('id')
     .isMongoId()

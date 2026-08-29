@@ -3,6 +3,8 @@ const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
 require("dotenv").config();
+const cors = require("cors");
+const compression = require("compression");
 
 const ApiError = require("./utils/ApiError");
 const gloabalError = require("./middlewares/errorMiddleware");
@@ -16,6 +18,14 @@ dbConnection();
 
 //express app
 const app = express();
+
+//enable other domains to access your app
+app.use(cors());
+app.options("/*splat", cors());
+
+//compress all responses 
+app.use(compression());
+
 
 //Middleware
 app.set("query parser", "extended");

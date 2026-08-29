@@ -68,6 +68,8 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
       email: req.body.email,
       profileImg: req.body.profileImg,
       role: req.body.role,
+      active: req.body.active,
+
     },
     {
       new: true,
