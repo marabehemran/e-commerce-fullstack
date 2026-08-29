@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
-
 import { useDispatch, useSelector } from "react-redux";
 
 import { getLoggedUser, finishAuthCheck } from "./features/auth/authSlice";
+
+import { getWishlist } from "./features/wishlist/wishlistSlice";
+import { getCart } from "./features/cart/cartSlice";
 
 import ProtectedRoute from "./Routes/ProtectedRoute";
 
@@ -50,7 +52,7 @@ import UserUpdateReviewPage from "./Page/User/UserUpdateReviewPage";
 function App() {
   const dispatch = useDispatch();
 
-  const { token } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     if (token) {
@@ -59,6 +61,14 @@ function App() {
       dispatch(finishAuthCheck());
     }
   }, [dispatch, token]);
+
+  useEffect(() => {
+    if (user?.role === "user") {
+      dispatch(getWishlist());
+      dispatch(getCart());
+    }
+  }, [dispatch, user]);
+
   return (
     <BrowserRouter>
       <NavBarLogin />
@@ -104,12 +114,12 @@ function App() {
           />
 
           <Route
-            path="/manageupdateaccout"
+            path="/manageupdateaccout/:id"
             element={<ManageUpdateAccountPage />}
           />
 
           <Route
-            path="/manageupdatesubcategory"
+            path="/manageupdatesubcategory/:id"
             element={<ManageUpdateSubCategoryPage />}
           />
 
@@ -117,7 +127,7 @@ function App() {
             path="/manageupdatecategory/:id"
             element={<ManageUpdateCategoryPage />}
           />
-          
+
           <Route
             path="/manageupdatebrand/:id"
             element={<ManageUpdateBrandPage />}
@@ -129,7 +139,7 @@ function App() {
           />
 
           <Route
-            path="/manageupdateproduct"
+            path="/manageupdateproduct/:id"
             element={<ManageUpdateProductPage />}
           />
         </Route>
@@ -165,7 +175,10 @@ function App() {
             element={<UserUpdateAddressPage />}
           />
 
-          <Route path="/user/updatereview" element={<UserUpdateReviewPage />} />
+          <Route
+            path="/user/updatereview/:id"
+            element={<UserUpdateReviewPage />}
+          />
         </Route>
       </Routes>
 

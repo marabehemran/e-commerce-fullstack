@@ -1,17 +1,39 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/axios";
 
-// GET ALL BRANDS
+// GET BRANDS WITH PAGINATION
 export const getBrands = createAsyncThunk(
   "brands/getBrands",
   async (page = 1, thunkAPI) => {
     try {
-      const response = await api.get(`/brands?page=${page}&limit=10`);
+      const response = await api.get(
+        `/brands?page=${page}&limit=10`,
+      );
 
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Failed to fetch brands",
+        error.response?.data?.message ||
+          "Failed to fetch brands",
+      );
+    }
+  },
+);
+
+// GET ALL BRANDS
+export const getAllBrands = createAsyncThunk(
+  "brands/getAllBrands",
+  async (_, thunkAPI) => {
+    try {
+      const response = await api.get(
+        "/brands?page=1&limit=1000",
+      );
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to fetch all brands",
       );
     }
   },
@@ -22,12 +44,16 @@ export const createBrand = createAsyncThunk(
   "brands/createBrand",
   async (brandData, thunkAPI) => {
     try {
-      const response = await api.post("/brands", brandData);
+      const response = await api.post(
+        "/brands",
+        brandData,
+      );
 
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Failed to create brand",
+        error.response?.data?.message ||
+          "Failed to create brand",
       );
     }
   },
@@ -38,12 +64,15 @@ export const getBrand = createAsyncThunk(
   "brands/getBrand",
   async (id, thunkAPI) => {
     try {
-      const response = await api.get(`/brands/${id}`);
+      const response = await api.get(
+        `/brands/${id}`,
+      );
 
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Failed to fetch brand",
+        error.response?.data?.message ||
+          "Failed to fetch brand",
       );
     }
   },
@@ -54,12 +83,16 @@ export const updateBrand = createAsyncThunk(
   "brands/updateBrand",
   async ({ id, brandData }, thunkAPI) => {
     try {
-      const response = await api.put(`/brands/${id}`, brandData);
+      const response = await api.put(
+        `/brands/${id}`,
+        brandData,
+      );
 
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Failed to update brand",
+        error.response?.data?.message ||
+          "Failed to update brand",
       );
     }
   },
@@ -75,7 +108,8 @@ export const deleteBrand = createAsyncThunk(
       return id;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Failed to delete brand",
+        error.response?.data?.message ||
+          "Failed to delete brand",
       );
     }
   },
@@ -86,6 +120,7 @@ const brandSlice = createSlice({
 
   initialState: {
     brands: [],
+    allBrands: [],
     paginationResult: null,
     loading: false,
     error: null,
@@ -97,7 +132,7 @@ const brandSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // GET BRANDS
+      // GET BRANDS WITH PAGINATION
       .addCase(getBrands.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -106,11 +141,25 @@ const brandSlice = createSlice({
       .addCase(getBrands.fulfilled, (state, action) => {
         state.loading = false;
         state.brands = action.payload.data;
-        state.paginationResult = action.payload.paginationResult;
+        state.paginationResult =
+          action.payload.paginationResult;
       })
 
       .addCase(getBrands.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET ALL BRANDS
+      .addCase(getAllBrands.pending, (state) => {
+        state.error = null;
+      })
+
+      .addCase(getAllBrands.fulfilled, (state, action) => {
+        state.allBrands = action.payload.data;
+      })
+
+      .addCase(getAllBrands.rejected, (state, action) => {
         state.error = action.payload;
       })
 

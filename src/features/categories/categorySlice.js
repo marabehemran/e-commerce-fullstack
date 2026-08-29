@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/axios";
 
-// GET ALL CATEGORIES
+// GET ALL CATEGORIES WITH PAGINATION
 export const getCategories = createAsyncThunk(
   "categories/getCategories",
   async (page = 1, thunkAPI) => {
@@ -12,6 +12,22 @@ export const getCategories = createAsyncThunk(
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Failed to fetch categories",
+      );
+    }
+  },
+);
+
+// GET ALL CATEGORIES WITHOUT PAGINATION
+export const getAllCategories = createAsyncThunk(
+  "categories/getAllCategories",
+  async (_, thunkAPI) => {
+    try {
+      const response = await api.get("/categories?page=1&limit=1000");
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch all categories",
       );
     }
   },
@@ -82,8 +98,10 @@ export const deleteCategory = createAsyncThunk(
 
 const categorySlice = createSlice({
   name: "categories",
+
   initialState: {
     categories: [],
+    allCategories: [],
     paginationResult: null,
     loading: false,
     error: null,
@@ -95,7 +113,7 @@ const categorySlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // GET CATEGORIES
+      // GET CATEGORIES WITH PAGINATION
       .addCase(getCategories.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -109,6 +127,19 @@ const categorySlice = createSlice({
 
       .addCase(getCategories.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload;
+      })
+
+      // GET ALL CATEGORIES
+      .addCase(getAllCategories.pending, (state) => {
+        state.error = null;
+      })
+
+      .addCase(getAllCategories.fulfilled, (state, action) => {
+        state.allCategories = action.payload.data;
+      })
+
+      .addCase(getAllCategories.rejected, (state, action) => {
         state.error = action.payload;
       })
 
@@ -171,6 +202,8 @@ const categorySlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
+      // GET ONE CATEGORY
       .addCase(getCategory.pending, (state) => {
         state.loading = true;
         state.error = null;

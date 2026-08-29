@@ -1,65 +1,38 @@
-import React, { useState } from "react";
-import { LayoutGrid } from "lucide-react";
+import React from "react";
 
-function CategoryHeader() {
-  const [selectedCategory, setSelectedCategory] = useState("all");
+import {
+  LayoutGrid,
+} from "lucide-react";
 
-  const categoryData = {
-    electronics: {
-      name: "الإلكترونيات",
-      subCategories: [
-        "الكل",
-        "هواتف",
-        "لابتوبات",
-        "سماعات",
-        "ساعات ذكية",
-        "أجهزة لوحية",
-        "إكسسوارات",
-      ],
-    },
+function CategoryHeader({
+  categories,
+  subCategories,
 
-    fashion: {
-      name: "الملابس",
-      subCategories: [
-        "الكل",
-        "ملابس رجالية",
-        "ملابس نسائية",
-        "ملابس أطفال",
-        "جاكيتات",
-        "قمصان",
-        "بناطيل",
-      ],
-    },
+  selectedCategory,
+  selectedSubCategory,
 
-    shoes: {
-      name: "الأحذية",
-      subCategories: [
-        "الكل",
-        "أحذية رياضية",
-        "أحذية رجالية",
-        "أحذية نسائية",
-        "أحذية أطفال",
-        "صنادل",
-        "بوت",
-      ],
-    },
-  };
-
+  onCategoryChange,
+  onSubCategoryChange,
+}) {
   return (
     <div className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+
       <div className="mx-auto max-w-7xl px-4">
 
         <div className="flex items-center gap-2 overflow-x-auto py-3">
 
           <div className="ml-2 flex shrink-0 items-center gap-2 text-sm font-black text-slate-400">
-            <LayoutGrid  />
+            <LayoutGrid />
             التصنيفات
           </div>
 
           <button
-            onClick={() => setSelectedCategory("all")}
-            className={`shrink-0 rounded-2xl px-5 py-2.5 text-sm font-black ${
-              selectedCategory === "all"
+            type="button"
+            onClick={() =>
+              onCategoryChange("")
+            }
+            className={`shrink-0 cursor-pointer rounded-2xl px-5 py-2.5 text-sm font-black ${
+              selectedCategory === ""
                 ? "bg-slate-950 text-white"
                 : "text-slate-500 hover:bg-slate-100"
             }`}
@@ -67,44 +40,33 @@ function CategoryHeader() {
             كل المنتجات
           </button>
 
-          <button
-            onClick={() => setSelectedCategory("electronics")}
-            className={`shrink-0 rounded-2xl px-5 py-2.5 text-sm font-black ${
-              selectedCategory === "electronics"
-                ? "bg-slate-950 text-white"
-                : "text-slate-500 hover:bg-slate-100"
-            }`}
-          >
-            الإلكترونيات
-          </button>
-
-          <button
-            onClick={() => setSelectedCategory("fashion")}
-            className={`shrink-0 rounded-2xl px-5 py-2.5 text-sm font-black ${
-              selectedCategory === "fashion"
-                ? "bg-slate-950 text-white"
-                : "text-slate-500 hover:bg-slate-100"
-            }`}
-          >
-            الملابس
-          </button>
-
-          <button
-            onClick={() => setSelectedCategory("shoes")}
-            className={`shrink-0 rounded-2xl px-5 py-2.5 text-sm font-black ${
-              selectedCategory === "shoes"
-                ? "bg-slate-950 text-white"
-                : "text-slate-500 hover:bg-slate-100"
-            }`}
-          >
-            الأحذية
-          </button>
+          {categories.map(
+            (category) => (
+              <button
+                key={
+                  category._id
+                }
+                type="button"
+                onClick={() =>
+                  onCategoryChange(
+                    category._id,
+                  )
+                }
+                className={`shrink-0 cursor-pointer rounded-2xl px-5 py-2.5 text-sm font-black ${
+                  selectedCategory ===
+                  category._id
+                    ? "bg-slate-950 text-white"
+                    : "text-slate-500 hover:bg-slate-100"
+                }`}
+              >
+                {category.name}
+              </button>
+            ),
+          )}
 
         </div>
 
-
-
-        {selectedCategory !== "all" && (
+        {selectedCategory && (
           <div className="border-t border-slate-100 py-3 dark:border-slate-800">
 
             <div className="flex items-center gap-2 overflow-x-auto">
@@ -113,15 +75,47 @@ function CategoryHeader() {
                 التصنيفات الفرعية
               </span>
 
-              {categoryData[selectedCategory].subCategories.map(
+              <button
+                type="button"
+                onClick={() =>
+                  onSubCategoryChange(
+                    "",
+                  )
+                }
+                className={`shrink-0 cursor-pointer rounded-2xl px-5 py-2.5 text-sm font-black ${
+                  selectedSubCategory ===
+                  ""
+                    ? "bg-violet-100 text-violet-700"
+                    : "text-slate-500 hover:bg-slate-100"
+                }`}
+              >
+                الكل
+              </button>
+
+              {subCategories.map(
                 (subCategory) => (
                   <button
-                    key={subCategory}
-                    className="shrink-0 rounded-2xl px-5 py-2.5 text-sm font-black text-slate-500 hover:bg-slate-100"
+                    key={
+                      subCategory._id
+                    }
+                    type="button"
+                    onClick={() =>
+                      onSubCategoryChange(
+                        subCategory._id,
+                      )
+                    }
+                    className={`shrink-0 cursor-pointer rounded-2xl px-5 py-2.5 text-sm font-black ${
+                      selectedSubCategory ===
+                      subCategory._id
+                        ? "bg-violet-100 text-violet-700"
+                        : "text-slate-500 hover:bg-slate-100"
+                    }`}
                   >
-                    {subCategory}
+                    {
+                      subCategory.name
+                    }
                   </button>
-                )
+                ),
               )}
 
             </div>
@@ -130,6 +124,7 @@ function CategoryHeader() {
         )}
 
       </div>
+
     </div>
   );
 }

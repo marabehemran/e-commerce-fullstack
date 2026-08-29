@@ -8,7 +8,7 @@ function HomePage() {
     <div className='text-center'>
       <HeaderBanner/>
       <HomeGategories/>
-      <CardProductsCountainer title="الاكثر مبيعا" btnTitle="عرض الكل" pathText="product"/>
+      <CardProductsCountainer title="الاكثر مبيعا" btnTitle="عرض الكل" pathText="/products"/>
       <BrandFeature title="اشهر الماركات" btnTitle="عرض الكل"/>
     </div>
   )

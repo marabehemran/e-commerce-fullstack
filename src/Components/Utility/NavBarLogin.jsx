@@ -1,16 +1,12 @@
 import React from "react";
 
 import { useDispatch, useSelector } from "react-redux";
-
 import { Link, useNavigate } from "react-router-dom";
 
-import {
-  Van,
-  Search,
-  Heart,
-  Moon,
-  ShoppingCart,
-} from "lucide-react";
+import { clearWishlistState } from "../../features/wishlist/wishlistSlice";
+import { clearCartState } from "../../features/cart/cartSlice";
+
+import { Van, Search, Heart, Moon, ShoppingCart } from "lucide-react";
 
 import { logout } from "../../features/auth/authSlice";
 
@@ -23,8 +19,13 @@ function NavBarLogin() {
 
   const { user } = useSelector((state) => state.auth);
 
+  const { numOfCartItems } = useSelector((state) => state.cart);
+
   const handleLogout = () => {
     dispatch(logout());
+
+    dispatch(clearWishlistState());
+    dispatch(clearCartState());
 
     navigate("/login");
   };
@@ -98,9 +99,15 @@ function NavBarLogin() {
 
                 <Link
                   to="/cart"
-                  className="grid h-10 w-10 place-items-center rounded-xl hover:bg-violet-50 hover:text-violet-700"
+                  className="relative grid h-10 w-10 place-items-center rounded-xl hover:bg-violet-50 hover:text-violet-700"
                 >
                   <ShoppingCart />
+
+                  {numOfCartItems > 0 && (
+                    <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-violet-700 px-1 text-[10px] font-black text-white">
+                      {numOfCartItems}
+                    </span>
+                  )}
                 </Link>
               </>
             )}
