@@ -1,238 +1,458 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET);
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
-const asyncHandler = require('express-async-handler');
-const factory = require('./handlersFactory');
-const ApiError = require('../utils/ApiError');
+const asyncHandler = require("express-async-handler");
+const factory = require("./handlersFactory");
+const ApiError = require("../utils/ApiError");
 
-const User = require('../models/userModel');
-const Product = require('../models/productModel');
-const Cart = require('../models/cartModel');
-const Order = require('../models/orderModel');
-
+const Product = require("../models/productModel");
+const Cart = require("../models/cartModel");
+const Order = require("../models/orderModel");
+const User = require("../models/userModel");
 
 /**
- *  @desc    create cash order
- *  @route   /api/v1/orders/cartId
- *  @method  POST
- *  @access  private
+ * @desc    Create cash order
+ * @route   POST /api/v1/orders/:cartId
+ * @access  Private/User
  */
 exports.createCashOrder = asyncHandler(async (req, res, next) => {
-  // app settings
-  const taxPrice = 0;
-  const shippingPrice = 0;
+    const taxPrice = 0;
+    const shippingPrice = 0;
 
-  // 1) Get cart depend on cartId
-  const cart = await Cart.findById(req.params.cartId);
-  if (!cart) {
-    return next(
-      new ApiError(`There is no such cart with id ${req.params.cartId}`, 404)
-    );
-  }
+    // Get cart
+    const cart = await Cart.findById(req.params.cartId);
 
-  // 2) Get order price depend on cart price "Check if coupon apply"
-  const cartPrice = cart.totalPriceAfterDiscount
-    ? cart.totalPriceAfterDiscount
-    : cart.totalCartPrice;
+    if (!cart) {
+        return next(
+            new ApiError(
+                `There is no such cart with id ${req.params.cartId}`,
+                404,
+            ),
+        );
+    }
 
-  const totalOrderPrice = cartPrice + taxPrice + shippingPrice;
+    // Make sure cart belongs to logged user
+    if (cart.user.toString() !== req.user._id.toString()) {
+        return next(
+            new ApiError("You are not allowed to access this cart", 403),
+        );
+    }
 
-  // 3) Create order with default paymentMethodType cash
-  const order = await Order.create({
-    user: req.user._id,
-    cartItems: cart.cartItems,
-    shippingAddress: req.body.shippingAddress,
-    totalOrderPrice,
-  });
+    // Get cart price
+    const cartPrice =
+        cart.totalPriceAfterDiscount !== undefined
+            ? cart.totalPriceAfterDiscount
+            : cart.totalCartPrice;
 
-  // 4) After creating order, decrement product quantity, increment product sold
-  if (order) {
-    const bulkOption = cart.cartItems.map((item) => ({
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
-      },
-    }));
-    await Product.bulkWrite(bulkOption, {});
+    const totalOrderPrice =
+        Number(cartPrice) + taxPrice + shippingPrice;
 
-    // 5) Clear cart depend on cartId
-    await Cart.findByIdAndDelete(req.params.cartId);
-  }
+    // Create order
+    const order = await Order.create({
+        user: req.user._id,
 
-  res.status(201).json({ status: 'success', data: order });
-});
+        cartItems: cart.cartItems,
 
-exports.filterOrderForLoggedUser = asyncHandler(async (req, res, next) => {
-  if (req.user.role === 'user') req.filterObj = { user: req.user._id };
-  next();
-});
+        shippingAddress: req.body.shippingAddress,
 
-/**
- *  @desc     Get all orders
- *  @route   /api/v1/orders
- *  @method  GET
- *  @access  private
- */
-exports.findAllOrders = factory.getAll(Order);
+        totalOrderPrice,
 
+        paymentMethodType: "cash",
+    });
 
-/**
- *  @desc    Get order by id
- *  @route   /api/v1/orders
- *  @method  GET
- *  @access  private
- */
-exports.findSpecificOrder = factory.getOne(Order);
+    if (order) {
+        // Update product quantity and sold
+        const bulkOption = cart.cartItems.map((item) => ({
+            updateOne: {
+                filter: {
+                    _id: item.product,
+                },
 
-/**
- *  @desc    Update order paid status to paid
- *  @route   /api/v1/orders/:id/pay
- *  @method  PUT
- *  @access  private
- */
-exports.updateOrderToPaid = asyncHandler(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
-  if (!order) {
-    return next(
-      new ApiError(
-        `There is no such a order with this id:${req.params.id}`,
-        404
-      )
-    );
-  }
+                update: {
+                    $inc: {
+                        quantity: -item.quantity,
+                        sold: item.quantity,
+                    },
+                },
+            },
+        }));
 
-  // update order to paid
-  order.isPaid = true;
-  order.paidAt = Date.now();
+        await Product.bulkWrite(bulkOption, {});
 
-  const updatedOrder = await order.save();
+        // Remove cart after creating order
+        await Cart.findByIdAndDelete(req.params.cartId);
+    }
 
-  res.status(200).json({ status: 'success', data: updatedOrder });
+    res.status(201).json({
+        status: "success",
+        data: order,
+    });
 });
 
 /**
- *  @desc    Update order delivered status
- *  @route   /api/v1/orders/:id/deliver
- *  @method  PUT
- *  @access  private
+ * @desc    Filter orders for logged user
  */
-exports.updateOrderToDelivered = asyncHandler(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
-  if (!order) {
-    return next(
-      new ApiError(
-        `There is no such a order with this id:${req.params.id}`,
-        404
-      )
-    );
-  }
+exports.filterOrderForLoggedUser = asyncHandler(
+    async (req, res, next) => {
+        if (req.user.role === "user") {
+            req.filterObj = {
+                user: req.user._id,
+            };
+        }
 
-  // update order to paid
-  order.isDelivered = true;
-  order.deliveredAt = Date.now();
-
-  const updatedOrder = await order.save();
-
-  res.status(200).json({ status: 'success', data: updatedOrder });
-});
-
-/**
- *  @desc    Get checkout session from stripe and send it as response
- *  @route   /api/v1/orders/checkout-session/:cartId
- *  @method  GET
- *  @access  private
- */
-exports.checkoutSession = asyncHandler(async (req, res, next) => {
-  // App settings
-  const taxPrice = 0;
-  const shippingPrice = 0;
-
-  // 1) Get cart depending on cartId
-  const cart = await Cart.findById(req.params.cartId);
-
-  if (!cart) {
-    return next(
-      new ApiError(
-        `There is no such cart with id ${req.params.cartId}`,
-        404
-      )
-    );
-  }
-
-  // 2) Get order price and check whether a coupon was applied
-  const cartPrice =
-    cart.totalPriceAfterDiscount !== undefined
-      ? cart.totalPriceAfterDiscount
-      : cart.totalCartPrice;
-
-  const totalOrderPrice = cartPrice + taxPrice + shippingPrice;
-
-  // 3) Create Stripe checkout session
-  const session = await stripe.checkout.sessions.create({
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-
-          product_data: {
-            name: `Order for ${req.user.name}`,
-            description: `Payment for cart ${req.params.cartId}`,
-          },
-
-          unit_amount: Math.round(totalOrderPrice * 100),
-        },
-
-        quantity: 1,
-      },
-    ],
-
-    mode: "payment",
-
-    success_url: `${req.protocol}://${req.get("host")}/orders`,
-    cancel_url: `${req.protocol}://${req.get("host")}/cart`,
-
-    customer_email: req.user.email,
-
-    client_reference_id: req.params.cartId,
-
-    metadata: {
-      city: req.body.shippingAddress?.city || "",
-      details: req.body.shippingAddress?.details || "",
-      phone: req.body.shippingAddress?.phone || "",
-      postalCode: req.body.shippingAddress?.postalCode || "",
+        next();
     },
-  });
+);
 
-  // 4) Send session in response
-  res.status(200).json({
-    status: "success",
-    session,
-  });
+/**
+ * @desc    Get all orders
+ * @route   GET /api/v1/orders
+ * @access  Private
+ */
+exports.findAllOrders = asyncHandler(async (req, res) => {
+    const keyword = req.query.keyword?.trim();
+
+    let filter = {};
+
+    if (req.filterObj) {
+        filter = { ...req.filterObj };
+    }
+
+    if (keyword) {
+        const users = await User.find({
+            name: {
+                $regex: keyword,
+                $options: "i",
+            },
+        }).select("_id");
+
+        const userIds = users.map((user) => user._id);
+
+        filter.user = {
+            $in: userIds,
+        };
+    }
+
+    const orders = await Order.find(filter).sort("-createdAt");
+
+    res.status(200).json({
+        results: orders.length,
+        data: orders,
+    });
 });
 
 /**
- *  @desc    This webhook will run when stripe payment success paid
- *  @route   /webhook-checkout
- *  @method  POST
- *  @access  private
+ * @desc    Get specific order
+ * @route   GET /api/v1/orders/:id
+ * @access  Private
  */
-exports.webhookCheckout = asyncHandler(async (req, res, next) => {
-  const sig = req.headers['stripe-signature'];
+exports.findSpecificOrder = asyncHandler(
+    async (req, res, next) => {
+        const order = await Order.findById(req.params.id);
 
-  let event;
+        if (!order) {
+            return next(
+                new ApiError(
+                    `There is no such order with id ${req.params.id}`,
+                    404,
+                ),
+            );
+        }
 
-  try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-  } catch (err) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-  if (event.type === 'checkout.session.completed') {
-    //  Create order
-    createCardOrder(event.data.object);
-  }
+        // Normal user can only see his own order
+        if (
+            req.user.role === "user" &&
+            order.user._id.toString() !== req.user._id.toString()
+        ) {
+            return next(
+                new ApiError(
+                    "You are not allowed to access this order",
+                    403,
+                ),
+            );
+        }
 
-  res.status(200).json({ received: true });
-});
+        res.status(200).json({
+            status: "success",
+            data: order,
+        });
+    },
+);
+
+/**
+ * @desc    Update order to paid
+ * @route   PUT /api/v1/orders/:id/pay
+ * @access  Private/Admin/Manager
+ */
+exports.updateOrderToPaid = asyncHandler(
+    async (req, res, next) => {
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return next(
+                new ApiError(
+                    `There is no such order with id ${req.params.id}`,
+                    404,
+                ),
+            );
+        }
+
+        order.isPaid = true;
+        order.paidAt = Date.now();
+
+        const updatedOrder = await order.save();
+
+        res.status(200).json({
+            status: "success",
+            data: updatedOrder,
+        });
+    },
+);
+
+/**
+ * @desc    Update order to delivered
+ * @route   PUT /api/v1/orders/:id/deliver
+ * @access  Private/Admin/Manager
+ */
+exports.updateOrderToDelivered = asyncHandler(
+    async (req, res, next) => {
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return next(
+                new ApiError(
+                    `There is no such order with id ${req.params.id}`,
+                    404,
+                ),
+            );
+        }
+
+        order.isDelivered = true;
+        order.deliveredAt = Date.now();
+
+        const updatedOrder = await order.save();
+
+        res.status(200).json({
+            status: "success",
+            data: updatedOrder,
+        });
+    },
+);
+
+/**
+ * @desc    Create Stripe test checkout session
+ * @route   POST /api/v1/orders/checkout-session/:cartId
+ * @access  Private/User
+ */
+exports.checkoutSession = asyncHandler(
+    async (req, res, next) => {
+        const taxPrice = 0;
+        const shippingPrice = 0;
+
+        // Get cart
+        const cart = await Cart.findById(req.params.cartId);
+
+        if (!cart) {
+            return next(
+                new ApiError(
+                    `There is no such cart with id ${req.params.cartId}`,
+                    404,
+                ),
+            );
+        }
+
+        // Make sure cart belongs to logged user
+        if (cart.user.toString() !== req.user._id.toString()) {
+            return next(
+                new ApiError("You are not allowed to access this cart", 403),
+            );
+        }
+
+        // Get cart price
+        const cartPrice =
+            cart.totalPriceAfterDiscount !== undefined
+                ? cart.totalPriceAfterDiscount
+                : cart.totalCartPrice;
+
+        const totalOrderPrice =
+            Number(cartPrice) + taxPrice + shippingPrice;
+
+        // Create Stripe test checkout session
+        const session = await stripe.checkout.sessions.create({
+            line_items: [
+                {
+                    price_data: {
+                        currency: "usd",
+
+                        product_data: {
+                            name: `Order for ${req.user.name}`,
+                        },
+
+                        unit_amount: Math.round(totalOrderPrice * 100),
+                        unit_amount: Math.round(totalOrderPrice * 100),
+                    },
+
+                    quantity: 1,
+                },
+            ],
+
+            mode: "payment",
+
+            success_url:
+                `http://localhost:5173/order/card-success?session_id={CHECKOUT_SESSION_ID}&cart_id=${req.params.cartId}`,
+            cancel_url:
+                "http://localhost:5173/cart",
+
+            customer_email: req.user.email,
+
+            client_reference_id: req.params.cartId,
+
+            metadata: {
+                details:
+                    req.body.shippingAddress?.details || "",
+
+                phone:
+                    req.body.shippingAddress?.phone || "",
+
+                city:
+                    req.body.shippingAddress?.city || "",
+
+                postalCode:
+                    req.body.shippingAddress?.postalCode || "",
+            },
+        });
+
+        res.status(200).json({
+            status: "success",
+            session,
+        });
+    },
+);
+
+/**
+ * @desc    Create card order after successful Stripe test payment
+ * @route   POST /api/v1/orders/card/:cartId
+ * @access  Private/User
+ */
+exports.createCardOrder = asyncHandler(
+    async (req, res, next) => {
+        const { sessionId } = req.body;
+
+        if (!sessionId) {
+            return next(
+                new ApiError("Stripe session id is required", 400),
+            );
+        }
+
+        // Ask Stripe about this checkout session
+        const session =
+            await stripe.checkout.sessions.retrieve(sessionId);
+
+        // Make sure Stripe says payment succeeded
+        if (session.payment_status !== "paid") {
+            return next(
+                new ApiError(
+                    "Payment has not been completed successfully",
+                    400,
+                ),
+            );
+        }
+
+        // Make sure this Stripe session belongs to this cart
+        if (
+            session.client_reference_id !== req.params.cartId
+        ) {
+            return next(
+                new ApiError(
+                    "Stripe session does not belong to this cart",
+                    400,
+                ),
+            );
+        }
+
+        // Get cart
+        const cart = await Cart.findById(req.params.cartId);
+
+        if (!cart) {
+            return next(
+                new ApiError(
+                    `There is no such cart with id ${req.params.cartId}`,
+                    404,
+                ),
+            );
+        }
+
+        // Make sure cart belongs to logged user
+        if (cart.user.toString() !== req.user._id.toString()) {
+            return next(
+                new ApiError(
+                    "You are not allowed to access this cart",
+                    403,
+                ),
+            );
+        }
+
+        const cartPrice =
+            cart.totalPriceAfterDiscount !== undefined
+                ? cart.totalPriceAfterDiscount
+                : cart.totalCartPrice;
+
+        const totalOrderPrice = Number(cartPrice);
+
+        // Create paid card order
+        const order = await Order.create({
+            user: req.user._id,
+
+            cartItems: cart.cartItems,
+
+            shippingAddress: {
+                details:
+                    session.metadata?.details || "",
+
+                phone:
+                    session.metadata?.phone || "",
+
+                city:
+                    session.metadata?.city || "",
+
+                postalCode:
+                    session.metadata?.postalCode || "",
+            },
+
+            totalOrderPrice,
+
+            paymentMethodType: "card",
+
+            isPaid: true,
+
+            paidAt: Date.now(),
+        });
+
+        if (order) {
+            // Update product quantity and sold
+            const bulkOption = cart.cartItems.map((item) => ({
+                updateOne: {
+                    filter: {
+                        _id: item.product,
+                    },
+
+                    update: {
+                        $inc: {
+                            quantity: -item.quantity,
+                            sold: item.quantity,
+                        },
+                    },
+                },
+            }));
+
+            await Product.bulkWrite(bulkOption, {});
+
+            // Remove cart after creating order
+            await Cart.findByIdAndDelete(req.params.cartId);
+        }
+
+        res.status(201).json({
+            status: "success",
+            data: order,
+        });
+    },
+);

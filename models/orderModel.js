@@ -68,5 +68,3 @@ orderSchema.pre(/^find/, function () {
 
 module.exports = mongoose.model('Order', orderSchema);
 
-// In@in2016
-//progahmedelsayed@gmail.com

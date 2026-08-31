@@ -6,176 +6,240 @@ const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 const User = require("../../models/userModel");
 
 exports.getUserValidator = [
-  check("id").isMongoId().withMessage("Invalid User id format"),
-  validatorMiddleware,
+    check("id").isMongoId().withMessage("Invalid User id format"),
+    validatorMiddleware,
 ];
 
 exports.createUserValidator = [
-  check("name")
-    .notEmpty()
-    .withMessage("User required")
-    .isLength({ min: 3 })
-    .withMessage("Too short User name")
-    .isLength({ max: 37 })
-    .withMessage("Too long User name")
-    .custom((val, { req }) => {
-      req.body.slug = slugify(val);
-      return true;
-    }),
-  check("email")
-    .notEmpty()
-    .withMessage("email is required")
-    .isEmail()
-    .withMessage("Invalid email")
-    .custom((val) =>
-      User.findOne({ email: val }).then((user) => {
-        if (user) {
-          return Promise.reject(new Error("email alredy exists"));
-        }
-      }),
-    ),
-  check("password")
-    .notEmpty()
-    .withMessage("password is required")
-    .isLength({ min: 6 })
-    .withMessage("password must be more than 6 characters")
-    .custom((password, { req }) => {
-      if (password !== req.body.passwordConfirm) {
-        throw new Error("password confirm is incorrect");
-      }
-      return true;
-    }),
-  check("passwordConfirm").notEmpty().withMessage("password confirm required"),
-  check("phone")
-    .optional()
-    .isMobilePhone(["ar-PS", "ar-JO"])
-    .withMessage("invalid phone number only pal or jor phone"),
-  check("profileImg").optional(),
-  check("role").optional(),
-  validatorMiddleware,
+    check("name")
+        .notEmpty()
+        .withMessage("User required")
+        .isLength({ min: 3 })
+        .withMessage("Too short User name")
+        .isLength({ max: 37 })
+        .withMessage("Too long User name")
+        .custom((val, { req }) => {
+            req.body.slug = slugify(val);
+            return true;
+        }),
+
+    check("email")
+        .notEmpty()
+        .withMessage("email is required")
+        .isEmail()
+        .withMessage("Invalid email")
+        .custom((val) =>
+            User.findOne({ email: val }).then((user) => {
+                if (user) {
+                    return Promise.reject(new Error("email alredy exists"));
+                }
+            }),
+        ),
+
+    check("password")
+        .notEmpty()
+        .withMessage("password is required")
+        .isLength({ min: 6 })
+        .withMessage("password must be more than 6 characters")
+        .custom((password, { req }) => {
+            if (password !== req.body.passwordConfirm) {
+                throw new Error("password confirm is incorrect");
+            }
+
+            return true;
+        }),
+
+    check("passwordConfirm")
+        .notEmpty()
+        .withMessage("password confirm required"),
+
+    check("phone")
+        .optional()
+        .isMobilePhone(["ar-PS", "ar-JO"])
+        .withMessage("invalid phone number only pal or jor phone"),
+
+    check("profileImg").optional(),
+
+    check("role")
+        .optional()
+        .isIn(["user", "manager", "admin"])
+        .withMessage("Role must be user, manager or admin"),
+
+    validatorMiddleware,
 ];
 
 exports.updateUserValidator = [
-  check("id").isMongoId().withMessage("Invalid User id format"),
+    check("id")
+        .isMongoId()
+        .withMessage("Invalid User id format"),
 
-  body("name")
-    .optional()
-    .custom((val, { req }) => {
-      req.body.slug = slugify(val);
-      return true;
-    }),
+    body("name")
+        .optional()
+        .custom((val, { req }) => {
+            req.body.slug = slugify(val);
+            return true;
+        }),
 
-  body("email")
-    .optional()
-    .isEmail()
-    .withMessage("Invalid email")
-    .bail()
-    .custom(async (val, { req }) => {
-      const user = await User.findOne({
-        email: val,
-        _id: { $ne: req.params.id },
-      });
+    body("email")
+        .optional()
+        .isEmail()
+        .withMessage("Invalid email")
+        .bail()
+        .custom(async (val, { req }) => {
+            const user = await User.findOne({
+                email: val,
+                _id: { $ne: req.params.id },
+            });
 
-      if (user) {
-        throw new Error("Email already exists");
-      }
+            if (user) {
+                throw new Error("Email already exists");
+            }
 
-      return true;
-    }),
+            return true;
+        }),
 
-  body("phone")
-    .optional()
-    .isMobilePhone(["ar-PS", "ar-JO"])
-    .withMessage(
-      "Invalid phone number, only Palestinian or Jordanian numbers",
-    ),
+    body("phone")
+        .optional({ checkFalsy: true })
+        .isMobilePhone(["ar-PS", "ar-JO"])
+        .withMessage(
+            "Invalid phone number, only Palestinian or Jordanian numbers",
+        ),
 
-  body("profileImg").optional(),
+    body("profileImg").optional(),
 
-  body("role")
-    .optional()
-    .isIn(["user", "manager", "admin"])
-    .withMessage("Role must be user, manager or admin"),
+    body("role")
+        .optional()
+        .isIn(["user", "manager", "admin"])
+        .withMessage("Role must be user, manager or admin"),
 
-  body("active")
-    .optional()
-    .isBoolean()
-    .withMessage("Active must be true or false")
-    .toBoolean(),
-
-  validatorMiddleware,
+    validatorMiddleware,
 ];
 
 exports.changeUserPasswordValidator = [
-  check("id").isMongoId().withMessage("Invalid User id format"),
-  body("currentPassword")
-    .notEmpty()
-    .withMessage("You must enter your current password"),
-  body("passwordConfirm")
-    .notEmpty()
-    .withMessage("you must enter the password confirm"),
-  body("password")
-    .notEmpty()
-    .withMessage("you must enter new password")
-    .custom(async (val, { req }) => {
-      //verfy crunt password
-      const user = await User.findById(req.params.id);
-      if (!user) {
-        throw new Error("there no user for this id");
-      }
-      const isCorrectPassword = await bcrypt.compare(
-        req.body.currentPassword,
-        user.password,
-      );
-      if (!isCorrectPassword) {
-        throw new Error("incorrect current password");
-      }
+    check("id")
+        .isMongoId()
+        .withMessage("Invalid User id format"),
 
-      //verfy password confirm
-      if (val !== req.body.passwordConfirm) {
-        throw new Error("password confirm is incorrect");
-      }
-      return true;
-    }),
-  validatorMiddleware,
-];
+    body("currentPassword")
+        .notEmpty()
+        .withMessage("You must enter your current password"),
 
-exports.deleteUserValidator = [
-  check("id").isMongoId().withMessage("Invalid User id format"),
-  validatorMiddleware,
+    body("passwordConfirm")
+        .notEmpty()
+        .withMessage("you must enter the password confirm"),
+
+    body("password")
+        .notEmpty()
+        .withMessage("you must enter new password")
+        .isLength({ min: 6 })
+        .withMessage("Password must be at least 6 characters")
+        .custom(async (val, { req }) => {
+            const user = await User.findById(req.params.id);
+
+            if (!user) {
+                throw new Error("there no user for this id");
+            }
+
+            const isCorrectPassword = await bcrypt.compare(
+                req.body.currentPassword,
+                user.password,
+            );
+
+            if (!isCorrectPassword) {
+                throw new Error("incorrect current password");
+            }
+
+            if (val !== req.body.passwordConfirm) {
+                throw new Error("password confirm is incorrect");
+            }
+
+            return true;
+        }),
+
+    validatorMiddleware,
 ];
 
 exports.updateLoggedUserValidator = [
-  body("name")
-    .optional()
-    .custom((val, { req }) => {
-      req.body.slug = slugify(val);
-      return true;
-    }),
+    body("name")
+        .optional()
+        .custom((val, { req }) => {
+            req.body.slug = slugify(val);
+            return true;
+        }),
 
-  body("email")
-    .optional()
-    .isEmail()
-    .withMessage("Invalid email")
-    .bail()
-    .custom(async (val, { req }) => {
-      const user = await User.findOne({
-        email: val,
-        _id: { $ne: req.params.id },
-      });
+    body("email")
+        .optional()
+        .isEmail()
+        .withMessage("Invalid email")
+        .bail()
+        .custom(async (val, { req }) => {
+            const user = await User.findOne({
+                email: val,
 
-      if (user) {
-        throw new Error("Email already exists");
-      }
+                _id: { $ne: req.user._id },
+            });
 
-      return true;
-    }),
+            if (user) {
+                throw new Error("Email already exists");
+            }
 
-  body("phone")
-    .optional()
-    .isMobilePhone(["ar-PS", "ar-JO"])
-    .withMessage("Invalid phone number, only Palestinian or Jordanian numbers"),
+            return true;
+        }),
 
+    body("phone")
+        .optional({ checkFalsy: true })
+        .isMobilePhone(["ar-PS", "ar-JO"])
+        .withMessage(
+            "Invalid phone number, only Palestinian or Jordanian numbers",
+        ),
 
-  validatorMiddleware,
+    validatorMiddleware,
+];
+
+exports.changeLoggedUserPasswordValidator = [
+    body("currentPassword")
+        .notEmpty()
+        .withMessage("You must enter your current password"),
+
+    body("passwordConfirm")
+        .notEmpty()
+        .withMessage("You must enter the password confirmation"),
+
+    body("password")
+        .notEmpty()
+        .withMessage("You must enter new password")
+        .isLength({ min: 6 })
+        .withMessage("Password must be at least 6 characters")
+        .custom(async (val, { req }) => {
+            const user = await User.findById(req.user._id);
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            const isCorrectPassword = await bcrypt.compare(
+                req.body.currentPassword,
+                user.password,
+            );
+
+            if (!isCorrectPassword) {
+                throw new Error("Incorrect current password");
+            }
+
+            if (val !== req.body.passwordConfirm) {
+                throw new Error("Password confirmation is incorrect");
+            }
+
+            return true;
+        }),
+
+    validatorMiddleware,
+];
+
+exports.deleteUserValidator = [
+    check("id")
+        .isMongoId()
+        .withMessage("Invalid User id format"),
+
+    validatorMiddleware,
 ];

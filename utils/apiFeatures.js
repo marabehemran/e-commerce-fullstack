@@ -37,22 +37,61 @@ class ApiFeatures {
     return this;
   }
 
-  search(modelName) {
-    if (this.queryString.keyword) {
-      let query = {};
-      if (modelName === 'Products') {
-        query.$or = [
-          { title: { $regex: this.queryString.keyword, $options: 'i' } },
-          { description: { $regex: this.queryString.keyword, $options: 'i' } },
-        ];
-      } else  {
-        query = { name: { $regex: this.queryString.keyword, $options: 'i' } };
-      }
+   search(modelName) {
+        if (this.queryString.keyword) {
+            let query = {};
 
-      this.mongooseQuery = this.mongooseQuery.find(query);
+            if (modelName === "Products") {
+                query.$or = [
+                    {
+                        title: {
+                            $regex: this.queryString.keyword,
+                            $options: "i",
+                        },
+                    },
+                    {
+                        description: {
+                            $regex: this.queryString.keyword,
+                            $options: "i",
+                        },
+                    },
+                ];
+            } else if (modelName === "Reviews") {
+                query = {
+                    title: {
+                        $regex: this.queryString.keyword,
+                        $options: "i",
+                    },
+                };
+            } else if (modelName === "Users") {
+                query.$or = [
+                    {
+                        name: {
+                            $regex: this.queryString.keyword,
+                            $options: "i",
+                        },
+                    },
+                    {
+                        email: {
+                            $regex: this.queryString.keyword,
+                            $options: "i",
+                        },
+                    },
+                ];
+            }  else {
+                query = {
+                    name: {
+                        $regex: this.queryString.keyword,
+                        $options: "i",
+                    },
+                };
+            }
+
+            this.mongooseQuery = this.mongooseQuery.find(query);
+        }
+
+        return this;
     }
-    return this;
-  }
 
   paginate(countDocuments) {
     const page = this.queryString.page * 1 || 1;

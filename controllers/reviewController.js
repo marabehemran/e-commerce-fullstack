@@ -27,7 +27,7 @@ exports.setProductIdAndUserIdToBody = (req, res, next) => {
  *  @method  get
  *  @access  public
  */
-exports.getReviews = factory.getAll(Review);
+exports.getReviews = factory.getAll(Review, "Reviews");
 
 /**
  *  @desc    get review by id

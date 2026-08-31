@@ -1,25 +1,44 @@
 const express = require("express");
 
 const authService = require("../controllers/authController");
+
 const {
-  addAddressValidator,
+    addAddressValidator,
+    updateAddressValidator,
+    deleteAddressValidator,
 } = require("../utils/validators/addressesValidators");
 
 const {
-  addAddress,
-  removeAddress,
-  getLoggedUserAddresses,
+    addAddress,
+    removeAddress,
+    getLoggedUserAddresses,
+    updateAddress,
 } = require("../controllers/addressControllers");
 
 const router = express.Router();
 
-router.use(authService.protect, authService.allowedTo("user"));
+router.use(
+    authService.protect,
+    authService.allowedTo("user"),
+);
 
 router
-  .route("/")
-  .post(addAddressValidator, addAddress)
-  .get(getLoggedUserAddresses);
+    .route("/")
+    .get(getLoggedUserAddresses)
+    .post(
+        addAddressValidator,
+        addAddress,
+    );
 
-router.delete("/:addressId", removeAddress);
+router
+    .route("/:addressId")
+    .put(
+        updateAddressValidator,
+        updateAddress,
+    )
+    .delete(
+        deleteAddressValidator,
+        removeAddress,
+    );
 
 module.exports = router;

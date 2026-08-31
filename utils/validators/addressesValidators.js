@@ -1,31 +1,79 @@
 const { check } = require("express-validator");
-const validatorMiddleware = require("../../middlewares/validatorMiddleware");
+
+const validatorMiddleware = require(
+    "../../middlewares/validatorMiddleware",
+);
 
 exports.addAddressValidator = [
-  check("alias")
-    .notEmpty()
-    .withMessage("Address alias is required"),
+    check("alias")
+        .notEmpty()
+        .withMessage("Address alias is required"),
 
-  check("details")
-    .notEmpty()
-    .withMessage("Address details are required")
-    .isLength({ min: 10 })
-    .withMessage("Address details is too short"),
+    check("details")
+        .notEmpty()
+        .withMessage("Address details are required")
+        .isLength({ min: 10 })
+        .withMessage(
+            "Address details must be at least 10 characters",
+        ),
 
-  check("phone")
-    .notEmpty()
-    .withMessage("Phone number is required")
-    .isMobilePhone(["ar-PS", "ar-JO"])
-    .withMessage("Invalid phone number"),
+    check("phone")
+        .notEmpty()
+        .withMessage("Phone number is required")
+        .isMobilePhone(["ar-PS", "ar-JO"])
+        .withMessage("Invalid phone number"),
 
-  check("city")
-    .notEmpty()
-    .withMessage("City is required"),
+    check("city")
+        .notEmpty()
+        .withMessage("City is required"),
 
-  check("postalCode")
-    .optional()
-    .isPostalCode("any")
-    .withMessage("Invalid postal code"),
+    check("postalCode")
+        .optional({ checkFalsy: true })
+        .isPostalCode("any")
+        .withMessage("Invalid postal code"),
 
-  validatorMiddleware,
+    validatorMiddleware,
+];
+
+exports.updateAddressValidator = [
+    check("addressId")
+        .isMongoId()
+        .withMessage("Invalid address id"),
+
+    check("alias")
+        .notEmpty()
+        .withMessage("Address alias is required"),
+
+    check("details")
+        .notEmpty()
+        .withMessage("Address details are required")
+        .isLength({ min: 10 })
+        .withMessage(
+            "Address details must be at least 10 characters",
+        ),
+
+    check("phone")
+        .notEmpty()
+        .withMessage("Phone number is required")
+        .isMobilePhone(["ar-PS", "ar-JO"])
+        .withMessage("Invalid phone number"),
+
+    check("city")
+        .notEmpty()
+        .withMessage("City is required"),
+
+    check("postalCode")
+        .optional({ checkFalsy: true })
+        .isPostalCode("any")
+        .withMessage("Invalid postal code"),
+
+    validatorMiddleware,
+];
+
+exports.deleteAddressValidator = [
+    check("addressId")
+        .isMongoId()
+        .withMessage("Invalid address id"),
+
+    validatorMiddleware,
 ];
