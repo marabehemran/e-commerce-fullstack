@@ -1,5 +1,3 @@
-import React from "react";
-
 function RateItem({ review }) {
   return (
     <div className=" dark:divide-slate-800">

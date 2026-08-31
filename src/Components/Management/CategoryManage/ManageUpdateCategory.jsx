@@ -1,10 +1,8 @@
-import { ImagePlus, LayoutGrid } from "lucide-react";
-
-import React, { useEffect, useState } from "react";
-
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { useNavigate, useParams } from "react-router-dom";
+
+import { ImagePlus, LayoutGrid } from "lucide-react";
 
 import {
   getCategory,

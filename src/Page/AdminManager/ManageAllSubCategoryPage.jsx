@@ -1,6 +1,5 @@
-import React from 'react'
-import ManagementAllSubCategories from '../../Components/Management/SubCategoryManage/ManagementAllSubCategories'
-import ManagementSideBar from '../../Components/Management/ManagementSideBar'
+import ManagementAllSubCategories from "../../Components/Management/SubCategoryManage/ManagementAllSubCategories";
+import ManagementSideBar from "../../Components/Management/ManagementSideBar";
 
 function AdminAllSubCategoryPage() {
   return (
@@ -8,7 +7,7 @@ function AdminAllSubCategoryPage() {
       <ManagementSideBar />
       <ManagementAllSubCategories />
     </div>
-  )
+  );
 }
 
-export default AdminAllSubCategoryPage
+export default AdminAllSubCategoryPage;

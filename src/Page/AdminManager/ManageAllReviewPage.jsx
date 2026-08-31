@@ -1,4 +1,3 @@
-import React from "react";
 import ManagementAllReviews from "../../Components/Management/ReviewManage/ManagementAllReviews";
 import ManagementSideBar from "../../Components/Management/ManagementSideBar";
 

@@ -4,9 +4,12 @@ import api from "../../api/axios";
 // GET ALL USERS
 export const getUsers = createAsyncThunk(
   "users/getUsers",
-  async (page = 1, thunkAPI) => {
+
+  async ({ page = 1, keyword = "" } = {}, thunkAPI) => {
     try {
-      const response = await api.get(`/users?page=${page}&limit=10`);
+      const response = await api.get(
+        `/users?page=${page}&limit=10&keyword=${encodeURIComponent(keyword)}`,
+      );
 
       return response.data;
     } catch (error) {
@@ -227,9 +230,7 @@ const userSlice = createSlice({
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.loading = false;
 
-        state.users = state.users.filter(
-          (user) => user._id !== action.payload,
-        );
+        state.users = state.users.filter((user) => user._id !== action.payload);
       })
 
       .addCase(deleteUser.rejected, (state, action) => {

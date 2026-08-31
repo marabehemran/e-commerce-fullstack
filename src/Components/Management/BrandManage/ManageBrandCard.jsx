@@ -1,7 +1,6 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
 
-import { Link } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 import { deleteBrand } from "../../../features/brands/brandSlice";
 
@@ -32,21 +31,17 @@ function ManageBrandCard({ brand, onDeleted }) {
             className="h-14 w-14 rounded-xl object-contain"
           />
 
-          <span className="font-black">
-            {brand.name}
-          </span>
+          <span className="font-black">{brand.name}</span>
         </div>
       </td>
 
-      <td className="px-5 py-4 text-slate-500">
-        ماركة
-      </td>
+      <td className="px-5 py-4 text-slate-500">ماركة</td>
 
       <td className="px-5 py-4">
         <div className="flex flex-wrap gap-2">
           <Link
             to={`/manageupdatebrand/${brand._id}`}
-            className="cursor-pointer rounded-xl bg-violet-50 px-3 py-2 font-black text-violet-700 dark:bg-violet-950"
+            className="rounded-xl bg-violet-50 px-3 py-2 font-black text-violet-700"
           >
             تعديل
           </Link>
@@ -55,7 +50,7 @@ function ManageBrandCard({ brand, onDeleted }) {
             <button
               type="button"
               onClick={handleDelete}
-              className="cursor-pointer rounded-xl bg-rose-50 px-3 py-2 font-black text-rose-600 dark:bg-rose-950"
+              className="cursor-pointer rounded-xl bg-rose-50 px-3 py-2 font-black text-rose-600"
             >
               حذف
             </button>

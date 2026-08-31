@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { MessageSquareText } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import ManageReviewCard from "./ManageReviewCard";
 import ManagementTable from "../ManagementTable";
 import Pagination from "../../Utility/Pagination";
+
+import { MessageSquareText } from "lucide-react";
 
 import { getReviews } from "../../../features/reviews/reviewSlice";
 
@@ -12,6 +13,7 @@ function ManagementAllReviews() {
   const dispatch = useDispatch();
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const { reviews, paginationResult, loading, error } = useSelector(
     (state) => state.reviews,
@@ -22,9 +24,15 @@ function ManagementAllReviews() {
       getReviews({
         page: currentPage,
         limit: 10,
+        keyword: searchKeyword,
       }),
     );
-  }, [dispatch, currentPage]);
+  }, [dispatch, currentPage, searchKeyword]);
+
+  const handleSearchChange = (value) => {
+    setSearchKeyword(value);
+    setCurrentPage(1);
+  };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -47,15 +55,14 @@ function ManagementAllReviews() {
 
       {error && <p className="text-red-500">{error}</p>}
 
-      {!loading && reviews.length === 0 && <p>لا يوجد تقييمات</p>}
-
-      {!loading && reviews.length > 0 && (
-        <ManagementTable>
-          {reviews.map((review) => (
-            <ManageReviewCard key={review._id} review={review} />
-          ))}
-        </ManagementTable>
-      )}
+      <ManagementTable
+        searchValue={searchKeyword}
+        onSearchChange={handleSearchChange}
+      >
+        {reviews.map((review) => (
+          <ManageReviewCard key={review._id} review={review} />
+        ))}
+      </ManagementTable>
 
       <Pagination
         currentPage={currentPage}

@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
-
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -58,18 +56,14 @@ function ResetPasswordPage() {
   return (
     <div className="mx-auto flex max-w-xl px-4 py-16">
       <div className="w-full rounded-[34px] border border-slate-200 bg-white p-8 shadow-lift dark:border-slate-800 dark:bg-slate-900">
-        <h1 className="text-4xl font-black">
-          إعادة تعيين كلمة المرور
-        </h1>
+        <h1 className="text-4xl font-black">إعادة تعيين كلمة المرور</h1>
 
         <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
           أدخل كلمة المرور الجديدة لحسابك.
         </p>
 
         {resetEmail && (
-          <p className="mt-2 text-sm font-bold text-violet-700">
-            {resetEmail}
-          </p>
+          <p className="mt-2 text-sm font-bold text-violet-700">{resetEmail}</p>
         )}
 
         <form onSubmit={handleSubmit} className="mt-7 space-y-4">
@@ -97,11 +91,7 @@ function ResetPasswordPage() {
             </p>
           )}
 
-          {error && (
-            <p className="text-sm font-bold text-red-500">
-              {error}
-            </p>
-          )}
+          {error && <p className="text-sm font-bold text-red-500">{error}</p>}
 
           <button
             type="submit"
@@ -113,9 +103,7 @@ function ResetPasswordPage() {
             }
             className="w-full cursor-pointer rounded-2xl bg-violet-700 py-4 font-black text-white"
           >
-            {loading
-              ? "جاري تغيير كلمة المرور..."
-              : "تغيير كلمة المرور"}
+            {loading ? "جاري تغيير كلمة المرور..." : "تغيير كلمة المرور"}
           </button>
         </form>
       </div>

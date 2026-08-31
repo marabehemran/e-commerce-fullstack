@@ -1,7 +1,4 @@
-import React from "react";
-
 import BrandCard from "./BrandCard";
-
 import SubTitle from "../Utility/SubTitle";
 
 function BrandContainer({ brands }) {

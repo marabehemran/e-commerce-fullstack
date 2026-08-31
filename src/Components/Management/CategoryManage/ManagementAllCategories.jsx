@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
-
 import { useDispatch, useSelector } from "react-redux";
 
 import ManageCategoryCard from "./ManageCategoryCard";
+import ManagementTable from "../ManagementTable";
+import Pagination from "../../Utility/Pagination";
 
 import { ImagePlus, LayoutGrid } from "lucide-react";
-
-import ManagementTable from "../ManagementTable";
-
-import Pagination from "../../Utility/Pagination";
 
 import {
   createCategory,
@@ -24,17 +21,22 @@ function ManagementAllCategories() {
   const [currentPage, setCurrentPage] = useState(1);
   const [createError, setCreateError] = useState(null);
 
-  const categories = useSelector(
-    (state) => state.categories.categories,
-  );
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  const categories = useSelector((state) => state.categories.categories);
 
   const paginationResult = useSelector(
     (state) => state.categories.paginationResult,
   );
 
   useEffect(() => {
-    dispatch(getCategories(currentPage));
-  }, [currentPage, dispatch]);
+    dispatch(
+      getCategories({
+        page: currentPage,
+        keyword: searchKeyword,
+      }),
+    );
+  }, [currentPage, searchKeyword, dispatch]);
 
   useEffect(() => {
     if (!image) {
@@ -51,6 +53,11 @@ function ManagementAllCategories() {
       URL.revokeObjectURL(imageUrl);
     };
   }, [image]);
+
+  const handleSearchChange = (value) => {
+    setSearchKeyword(value);
+    setCurrentPage(1);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,7 +84,12 @@ function ManagementAllCategories() {
       setImage(null);
 
       if (currentPage === 1) {
-        dispatch(getCategories(1));
+        dispatch(
+          getCategories({
+            page: 1,
+            keyword: searchKeyword,
+          }),
+        );
       } else {
         setCurrentPage(1);
       }
@@ -90,22 +102,24 @@ function ManagementAllCategories() {
     if (categories.length === 1 && currentPage > 1) {
       setCurrentPage((page) => page - 1);
     } else {
-      dispatch(getCategories(currentPage));
+      dispatch(
+        getCategories({
+          page: currentPage,
+          keyword: searchKeyword,
+        }),
+      );
     }
   };
 
   return (
     <div>
       <div className="mb-6">
-        <small className="font-black text-violet-600">
-          إدارة المتجر
-        </small>
+        <small className="font-black text-violet-600">إدارة المتجر</small>
 
         <h1 className="mt-1 text-3xl font-black">
           <span className="text-violet-600">
             <LayoutGrid />
           </span>
-
           التصنيفات
         </h1>
       </div>
@@ -135,9 +149,7 @@ function ManagementAllCategories() {
                 )}
               </span>
 
-              <b className="mt-2 block">
-                إضافة صورة التصنيف
-              </b>
+              <b className="mt-2 block">إضافة صورة التصنيف</b>
 
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 اختر صورة مناسبة للتصنيف
@@ -154,9 +166,7 @@ function ManagementAllCategories() {
             </label>
 
             <div className="flex flex-col justify-center">
-              <label className="mb-2 block font-black">
-                اسم التصنيف
-              </label>
+              <label className="mb-2 block font-black">اسم التصنيف</label>
 
               <input
                 type="text"
@@ -176,9 +186,7 @@ function ManagementAllCategories() {
           </div>
 
           {createError && (
-            <p className="mt-4 text-sm font-bold text-red-500">
-              {createError}
-            </p>
+            <p className="mt-4 text-sm font-bold text-red-500">{createError}</p>
           )}
 
           <button
@@ -190,7 +198,10 @@ function ManagementAllCategories() {
         </form>
       </details>
 
-      <ManagementTable>
+      <ManagementTable
+        searchValue={searchKeyword}
+        onSearchChange={handleSearchChange}
+      >
         {categories.map((category) => (
           <ManageCategoryCard
             key={category._id}

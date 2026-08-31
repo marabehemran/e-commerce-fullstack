@@ -1,5 +1,3 @@
-import React from "react";
-
 import ProductGallery from "./ProductGallery";
 import ProductDiscription from "./ProductDiscription";
 

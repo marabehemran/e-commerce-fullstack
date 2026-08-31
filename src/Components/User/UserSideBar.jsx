@@ -1,4 +1,4 @@
-import React from "react";
+import { useSelector } from "react-redux";
 import {
   ReceiptText,
   MapPin,
@@ -9,6 +9,7 @@ import {
 import { Link } from "react-router-dom";
 
 function UserSideBar() {
+  const { user } = useSelector((state) => state.auth);
   return (
     <aside className="h-fit rounded-[28px] border border-slate-200 bg-white p-3 shadow-soft dark:border-slate-800 dark:bg-slate-900 lg:sticky lg:top-28">
       <div className="mb-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-800">
@@ -19,8 +20,7 @@ function UserSideBar() {
         </div>
 
         <div>
-          <b>Ahmed Abdullah</b>
-
+          <b>{user?.name}</b>
           <small className="block text-slate-400">حساب مستخدم</small>
         </div>
       </div>

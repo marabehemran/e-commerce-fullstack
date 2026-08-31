@@ -1,10 +1,9 @@
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { ImagePlus, GitBranch } from "lucide-react";
-
-import { useNavigate, useParams } from "react-router-dom";
 
 import {
   getBrand,

@@ -1,6 +1,7 @@
+import { Link } from "react-router-dom";
+
 import {
   GitBranch,
-  LayoutDashboard,
   LayoutGrid,
   MessageSquareText,
   Package,
@@ -10,8 +11,6 @@ import {
   Ticket,
   Users,
 } from "lucide-react";
-import React from "react";
-import { Link } from "react-router-dom";
 
 function AdminSideBar() {
   return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,9 +9,7 @@ function ForgotPasswordPage() {
 
   const navigate = useNavigate();
 
-  const { loading, error, resetCodeSent } = useSelector(
-    (state) => state.auth,
-  );
+  const { loading, error, resetCodeSent } = useSelector((state) => state.auth);
 
   const [email, setEmail] = useState("");
 
@@ -51,9 +49,7 @@ function ForgotPasswordPage() {
             placeholder="name@example.com"
           />
 
-          {error && (
-            <p className="text-sm font-bold text-red-500">{error}</p>
-          )}
+          {error && <p className="text-sm font-bold text-red-500">{error}</p>}
 
           <button
             type="submit"

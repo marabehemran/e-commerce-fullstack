@@ -1,18 +1,33 @@
-import React from "react";
-
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
 import { clearWishlistState } from "../../features/wishlist/wishlistSlice";
 import { clearCartState } from "../../features/cart/cartSlice";
 
-import { Van, Search, Heart, Moon, ShoppingCart } from "lucide-react";
+import { Van, Search, Heart, Moon, Sun, ShoppingCart } from "lucide-react";
 
 import { logout } from "../../features/auth/authSlice";
 
 import logo from "../../images/logo.png";
 
 function NavBarLogin() {
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
+
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
+
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
@@ -25,14 +40,28 @@ function NavBarLogin() {
     dispatch(logout());
 
     dispatch(clearWishlistState());
+
     dispatch(clearCartState());
 
     navigate("/login");
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    const keyword = searchKeyword.trim();
+
+    if (!keyword) {
+      navigate("/products");
+      return;
+    }
+
+    navigate(`/products?keyword=${encodeURIComponent(keyword)}`);
+  };
+
   return (
     <>
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-xs bg-slate-950 text-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between bg-slate-950 px-4 py-2 text-xs text-white">
         <div className="flex gap-2 text-xs">
           <span>
             <Van />
@@ -48,7 +77,7 @@ function NavBarLogin() {
 
       <div className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/90 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/90">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4">
-          <div className="px-4 flex h-20 items-center gap-3">
+          <div className="flex h-20 items-center gap-3 px-4">
             <div className="flex h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-800 text-white shadow-lg">
               <span>
                 <Link to="/">
@@ -59,32 +88,45 @@ function NavBarLogin() {
 
             <div className="hidden md:block">
               <p className="text-lg font-stretch-100%">
-                Happy<span className="text-violet-600">Shop</span>
+                Happy
+                <span className="text-violet-600">Shop</span>
               </p>
 
               <p className="text-[10px]">تجربة بسيطة و واضحة</p>
             </div>
           </div>
 
-          <div className="relative flex-1 max-w-2xl ml-2 m-auto">
+          <form
+            onSubmit={handleSearch}
+            className="relative m-auto ml-2 max-w-2xl flex-1"
+          >
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
               <Search />
             </span>
 
             <input
+              type="text"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
               className="w-full rounded-2xl border border-slate-200 bg-slate-100/80 py-3.5 pr-12 pl-24 outline-none dark:border-slate-700 dark:bg-slate-900"
               placeholder="ابحث عن منتج..."
             />
 
-            <button className="absolute left-2 top-1/2 -translate-y-1/2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-black text-white hover:bg-violet-700">
+            <button
+              type="submit"
+              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-black text-white hover:bg-violet-700"
+            >
               <span>بحث</span>
             </button>
-          </div>
+          </form>
 
           <div className="mr-auto flex items-center gap-1">
-            <button className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900">
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900"
+            >
               <span className="text-[20px]">
-                <Moon />
+                {darkMode ? <Sun /> : <Moon />}
               </span>
             </button>
 

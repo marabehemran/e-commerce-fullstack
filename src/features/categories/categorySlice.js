@@ -4,9 +4,11 @@ import api from "../../api/axios";
 // GET ALL CATEGORIES WITH PAGINATION
 export const getCategories = createAsyncThunk(
   "categories/getCategories",
-  async (page = 1, thunkAPI) => {
+  async ({ page = 1, keyword = "" } = {}, thunkAPI) => {
     try {
-      const response = await api.get(`/categories?page=${page}&limit=10`);
+      const response = await api.get(
+        `/categories?page=${page}&limit=10&keyword=${encodeURIComponent(keyword)}`,
+      );
 
       return response.data;
     } catch (error) {

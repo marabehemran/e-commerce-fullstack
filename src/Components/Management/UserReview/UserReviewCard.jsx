@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
@@ -33,7 +32,7 @@ function UserReviewCard({ review }) {
 
           <button
             onClick={handleDelete}
-            className="rounded-xl bg-rose-50 px-3 py-2 font-black text-rose-600"
+            className="cursor-pointer rounded-xl bg-rose-50 px-3 py-2 font-black text-rose-600"
           >
             حذف
           </button>

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 
 import CategoryHeader from "../../Components/Category/CategoryHeader";
 import SearchCountResult from "../../Components/Utility/SearchCountResult";
@@ -15,6 +16,10 @@ import { getSubCategoriesByCategory } from "../../features/subCategories/subCate
 function ShopProductPage() {
   const dispatch = useDispatch();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const keyword = searchParams.get("keyword") || "";
+
   const [currentPage, setCurrentPage] = useState(1);
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
@@ -22,7 +27,6 @@ function ShopProductPage() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sort, setSort] = useState("-createdAt");
-  const [keyword, setKeyword] = useState("");
 
   const { products, paginationResult, loading } = useSelector(
     (state) => state.products,
@@ -38,6 +42,7 @@ function ShopProductPage() {
 
   useEffect(() => {
     dispatch(getAllCategories());
+
     dispatch(getAllBrands());
   }, [dispatch]);
 
@@ -79,31 +84,45 @@ function ShopProductPage() {
 
   const handleSubCategoryChange = (subCategoryId) => {
     setSubCategory(subCategoryId);
+
     setCurrentPage(1);
   };
 
   const handleBrandChange = (brandId) => {
     setBrand(brandId);
+
     setCurrentPage(1);
   };
 
   const handleMinPriceChange = (value) => {
     setMinPrice(value);
+
     setCurrentPage(1);
   };
 
   const handleMaxPriceChange = (value) => {
     setMaxPrice(value);
+
     setCurrentPage(1);
   };
 
   const handleSortChange = (value) => {
     setSort(value);
+
     setCurrentPage(1);
   };
 
   const handleKeywordChange = (value) => {
-    setKeyword(value);
+    const newSearchParams = new URLSearchParams(searchParams);
+
+    if (value.trim()) {
+      newSearchParams.set("keyword", value);
+    } else {
+      newSearchParams.delete("keyword");
+    }
+
+    setSearchParams(newSearchParams);
+
     setCurrentPage(1);
   };
 
@@ -113,9 +132,14 @@ function ShopProductPage() {
     setBrand("");
     setMinPrice("");
     setMaxPrice("");
-    setKeyword("");
     setSort("-createdAt");
     setCurrentPage(1);
+
+    const newSearchParams = new URLSearchParams(searchParams);
+
+    newSearchParams.delete("keyword");
+
+    setSearchParams(newSearchParams);
   };
 
   return (

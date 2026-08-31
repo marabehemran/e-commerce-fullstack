@@ -1,5 +1,3 @@
-import React from "react";
-
 import {
   LayoutGrid,
 } from "lucide-react";

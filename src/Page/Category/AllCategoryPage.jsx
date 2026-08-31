@@ -1,10 +1,8 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import CategoryContainer from "../../Components/Category/CategoryContainer";
 import Pagination from "../../Components/Utility/Pagination";
-
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
 import { getCategories } from "../../features/categories/categorySlice";
 
@@ -13,12 +11,10 @@ function AllCategoryPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const categories = useSelector(
-    (state) => state.categories.categories
-  );
+  const categories = useSelector((state) => state.categories.categories);
 
   const paginationResult = useSelector(
-    (state) => state.categories.paginationResult
+    (state) => state.categories.paginationResult,
   );
 
   useEffect(() => {

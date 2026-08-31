@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import ManageCouponCard from "./ManageCouponCard";
-import { Ticket } from "lucide-react";
 import ManagementTable from "../ManagementTable";
 import Pagination from "../../Utility/Pagination";
+
+import { Ticket } from "lucide-react";
+
 import {
   createCoupon,
   getCoupons,
@@ -18,18 +20,27 @@ function ManagementAllCoupons() {
   const [expire, setExpire] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [createError, setCreateError] = useState(null);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
-  const coupons = useSelector(
-    (state) => state.coupons.coupons,
-  );
+  const coupons = useSelector((state) => state.coupons.coupons);
 
   const paginationResult = useSelector(
     (state) => state.coupons.paginationResult,
   );
 
   useEffect(() => {
-    dispatch(getCoupons(currentPage));
-  }, [currentPage, dispatch]);
+    dispatch(
+      getCoupons({
+        page: currentPage,
+        keyword: searchKeyword,
+      }),
+    );
+  }, [currentPage, searchKeyword, dispatch]);
+
+  const handleSearchChange = (value) => {
+    setSearchKeyword(value);
+    setCurrentPage(1);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,7 +65,12 @@ function ManagementAllCoupons() {
       setExpire("");
 
       if (currentPage === 1) {
-        dispatch(getCoupons(1));
+        dispatch(
+          getCoupons({
+            page: 1,
+            keyword: searchKeyword,
+          }),
+        );
       } else {
         setCurrentPage(1);
       }
@@ -67,22 +83,24 @@ function ManagementAllCoupons() {
     if (coupons.length === 1 && currentPage > 1) {
       setCurrentPage((page) => page - 1);
     } else {
-      dispatch(getCoupons(currentPage));
+      dispatch(
+        getCoupons({
+          page: currentPage,
+          keyword: searchKeyword,
+        }),
+      );
     }
   };
 
   return (
     <div>
       <div className="mb-6">
-        <small className="font-black text-violet-600">
-          إدارة المتجر
-        </small>
+        <small className="font-black text-violet-600">إدارة المتجر</small>
 
         <h1 className="mt-1 text-3xl font-black">
           <span className="text-violet-600">
             <Ticket />
           </span>
-
           الكوبونات
         </h1>
       </div>
@@ -98,9 +116,7 @@ function ManagementAllCoupons() {
         >
           <div className="grid gap-5 md:grid-cols-2">
             <div className="md:col-span-2">
-              <label className="mb-2 block font-black">
-                اسم الكوبون
-              </label>
+              <label className="mb-2 block font-black">اسم الكوبون</label>
 
               <input
                 type="text"
@@ -115,9 +131,7 @@ function ManagementAllCoupons() {
             </div>
 
             <div>
-              <label className="mb-2 block font-black">
-                نسبة الخصم
-              </label>
+              <label className="mb-2 block font-black">نسبة الخصم</label>
 
               <div className="relative">
                 <input
@@ -140,9 +154,7 @@ function ManagementAllCoupons() {
             </div>
 
             <div>
-              <label className="mb-2 block font-black">
-                تاريخ الانتهاء
-              </label>
+              <label className="mb-2 block font-black">تاريخ الانتهاء</label>
 
               <input
                 type="date"
@@ -157,9 +169,7 @@ function ManagementAllCoupons() {
           </div>
 
           {createError && (
-            <p className="mt-4 text-sm font-bold text-red-500">
-              {createError}
-            </p>
+            <p className="mt-4 text-sm font-bold text-red-500">{createError}</p>
           )}
 
           <button
@@ -171,7 +181,10 @@ function ManagementAllCoupons() {
         </form>
       </details>
 
-      <ManagementTable>
+      <ManagementTable
+        searchValue={searchKeyword}
+        onSearchChange={handleSearchChange}
+      >
         {coupons.map((coupon) => (
           <ManageCouponCard
             key={coupon._id}

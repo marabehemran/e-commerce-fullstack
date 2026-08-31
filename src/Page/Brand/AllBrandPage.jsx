@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
-
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import BrandContainer from "../../Components/Brand/BrandContainer";
-
 import Pagination from "../../Components/Utility/Pagination";
 
 import { getBrands } from "../../features/brands/brandSlice";

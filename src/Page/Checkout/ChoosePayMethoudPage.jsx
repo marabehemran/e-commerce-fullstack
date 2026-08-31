@@ -1,12 +1,11 @@
-import React from 'react'
-import ChoodePayMethod from '../../Components/checkout/ChoodePayMethod'
+import ChoodePayMethod from "../../Components/checkout/ChoodePayMethod";
 
 function ChoosePayMethoudPage() {
   return (
     <div>
-      <ChoodePayMethod/>
+      <ChoodePayMethod />
     </div>
-  )
+  );
 }
 
-export default ChoosePayMethoudPage
+export default ChoosePayMethoudPage;

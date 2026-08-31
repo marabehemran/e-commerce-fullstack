@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Pencil, Star } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+
+import { Pencil, Star } from "lucide-react";
 
 import { getReview, updateReview } from "../../../features/reviews/reviewSlice";
 
@@ -56,7 +57,6 @@ function UpdateReview() {
 
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
-      {/* Header */}
       <div className="mb-6">
         <small className="font-black text-violet-600">تعديل التقييم</small>
 
@@ -70,7 +70,6 @@ function UpdateReview() {
         </p>
       </div>
 
-      {/* Product */}
       <div className="mb-6 flex items-center gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
         <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-white dark:bg-slate-700">
           <img
@@ -85,7 +84,6 @@ function UpdateReview() {
         </div>
       </div>
 
-      {/* Rating */}
       <div className="mb-6">
         <label className="mb-3 block text-sm font-black">تقييمك</label>
 
@@ -114,7 +112,6 @@ function UpdateReview() {
         </div>
       </div>
 
-      {/* Comment */}
       <div className="mb-6">
         <label htmlFor="review" className="mb-3 block text-sm font-black">
           تعليقك
@@ -134,7 +131,6 @@ function UpdateReview() {
         <p className="mb-4 text-sm text-red-500">{updateError}</p>
       )}
 
-      {/* Actions */}
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
@@ -148,7 +144,7 @@ function UpdateReview() {
           type="button"
           onClick={handleSubmit}
           disabled={loading}
-          className="rounded-xl bg-violet-700 px-6 py-3 text-sm font-black text-white transition hover:bg-violet-800"
+          className="cursor-pointer rounded-xl bg-violet-700 px-6 py-3 text-sm font-black text-white transition hover:bg-violet-800"
         >
           {loading ? "جاري الحفظ..." : "حفظ التعديل"}
         </button>

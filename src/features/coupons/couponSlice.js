@@ -4,9 +4,12 @@ import api from "../../api/axios";
 // GET ALL COUPONS
 export const getCoupons = createAsyncThunk(
   "coupons/getCoupons",
-  async (page = 1, thunkAPI) => {
+
+  async ({ page = 1, keyword = "" } = {}, thunkAPI) => {
     try {
-      const response = await api.get(`/coupons?page=${page}&limit=10`);
+      const response = await api.get(
+        `/coupons?page=${page}&limit=10&keyword=${encodeURIComponent(keyword)}`,
+      );
 
       return response.data;
     } catch (error) {

@@ -1,4 +1,3 @@
-import React from "react";
 import ShowAllUserReview from "../../Components/Management/UserReview/ShowAllUserReview";
 import UserSideBar from "../../Components/User/UserSideBar";
 

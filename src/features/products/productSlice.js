@@ -49,7 +49,7 @@ export const getProducts = createAsyncThunk(
       if (sort) {
         params.append("sort", sort);
       }
-      
+
       const response = await api.get(`/products?${params.toString()}`);
 
       return response.data;

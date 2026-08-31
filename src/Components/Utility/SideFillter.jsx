@@ -1,23 +1,16 @@
-import React from "react";
-
 import { Funnel } from "lucide-react";
 
 function SideFillter({
   categories,
   brands,
-
   selectedCategory,
   selectedBrand,
-
   minPrice,
   maxPrice,
-
   onCategoryChange,
   onBrandChange,
-
   onMinPriceChange,
   onMaxPriceChange,
-
   onClearFilters,
 }) {
   return (
@@ -40,12 +33,10 @@ function SideFillter({
         </button>
       </div>
 
-      {/* CATEGORY */}
-
       <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
         <b>الفئة</b>
 
-        <div className="mt-3 space-y-3 text-sm text-slate-500">
+        <div className="mt-3 max-h-56 space-y-3 overflow-y-auto pr-1 text-sm text-slate-500">
           <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
@@ -72,12 +63,10 @@ function SideFillter({
         </div>
       </div>
 
-      {/* BRAND */}
-
       <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
         <b>الماركة</b>
 
-        <div className="mt-3 space-y-3 text-sm text-slate-500">
+        <div className="mt-3 max-h-56 space-y-3 overflow-y-auto pr-1 text-sm text-slate-500">
           {brands.map((brand) => (
             <label
               key={brand._id}
@@ -96,8 +85,6 @@ function SideFillter({
           ))}
         </div>
       </div>
-
-      {/* PRICE */}
 
       <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
         <b>السعر</b>

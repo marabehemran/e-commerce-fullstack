@@ -4,9 +4,12 @@ import api from "../../api/axios";
 // GET ALL REVIEWS
 export const getReviews = createAsyncThunk(
   "reviews/getReviews",
-  async ({ page = 1, limit = 10 } = {}, thunkAPI) => {
+
+  async ({ page = 1, limit = 10, keyword = "" } = {}, thunkAPI) => {
     try {
-      const response = await api.get(`/reviews?page=${page}&limit=${limit}`);
+      const response = await api.get(
+        `/reviews?page=${page}&limit=${limit}&keyword=${encodeURIComponent(keyword)}`,
+      );
 
       return response.data;
     } catch (error) {
@@ -38,10 +41,13 @@ export const getProductReviews = createAsyncThunk(
 // GET LOGGED USER REVIEWS
 export const getUserReviews = createAsyncThunk(
   "reviews/getUserReviews",
-  async ({ userId, page = 1, limit = 10 }, thunkAPI) => {
+
+  async ({ userId, page = 1, limit = 10, keyword = "" }, thunkAPI) => {
     try {
       const response = await api.get(
-        `/reviews?user=${userId}&page=${page}&limit=${limit}`,
+        `/reviews?user=${userId}&page=${page}&limit=${limit}&keyword=${encodeURIComponent(
+          keyword,
+        )}`,
       );
 
       return response.data;

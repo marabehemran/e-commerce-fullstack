@@ -1,5 +1,3 @@
-import React from "react";
-
 function ProductDiscription({ product, brands }) {
   const brand = brands.find(
     (brand) => brand._id === (product.brand?._id || product.brand),

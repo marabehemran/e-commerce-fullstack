@@ -1,13 +1,10 @@
-import React, { useEffect } from "react";
-
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { useParams } from "react-router-dom";
 
 import ProductDetalis from "../../Components/Products/ProductDetalis";
 
 import { getProduct } from "../../features/products/productSlice";
-
 import { getAllBrands } from "../../features/brands/brandSlice";
 
 function ProductDetalisPage() {

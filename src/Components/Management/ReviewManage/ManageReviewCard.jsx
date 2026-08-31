@@ -1,27 +1,46 @@
-import React from "react";
+import { useDispatch } from "react-redux";
 
-import { Link } from "react-router-dom";
+import { deleteReview } from "../../../features/reviews/reviewSlice";
 
-function ManageReviewCard({ review }) {
+function ManageReviewCard({ review, onDeleted }) {
+  const dispatch = useDispatch();
+
+  const handleDelete = async () => {
+    try {
+      await dispatch(deleteReview(review._id)).unwrap();
+
+      if (onDeleted) {
+        onDeleted();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-soft dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-center justify-between">
+    <tr className="border-b border-slate-100 dark:border-slate-800">
+      <td className="px-5 py-4">
         <div>
           <p className="font-black">{review?.user?.name || "مستخدم"}</p>
 
-          <div className="mt-2 text-amber-500">★ {review?.ratings || 0}</div>
+          <div className="mt-1 text-amber-500">★ {review?.ratings || 0}</div>
         </div>
+      </td>
 
-        <Link
-          to={`/manager/reviews/${review?._id}`}
-          className="rounded-xl bg-violet-700 px-4 py-2 font-black text-white"
+      <td className="px-5 py-4 text-slate-500 dark:text-slate-300">
+        {review?.title}
+      </td>
+
+      <td className="px-5 py-4">
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="cursor-pointer rounded-xl bg-rose-50 px-3 py-2 font-black text-rose-600"
         >
-          تعديل
-        </Link>
-      </div>
-
-      <p className="mt-4 text-slate-600 dark:text-slate-300">{review?.title}</p>
-    </div>
+          حذف
+        </button>
+      </td>
+    </tr>
   );
 }
 

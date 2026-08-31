@@ -1,4 +1,3 @@
-import React from "react";
 import ManagementAllProducts from "../../Components/Management/ProductManage/ManagementAllProducts";
 import ManagementSideBar from "../../Components/Management/ManagementSideBar";
 function AdminAllProductPage() {

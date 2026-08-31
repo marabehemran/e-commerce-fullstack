@@ -1,7 +1,5 @@
-import React from "react";
 import SubTitle from "../Utility/SubTitle";
 import CategoryCard from "../Category/CategoryCard";
-import clothe from "../../images/clothe.png";
 
 function CategoryContainer({ categories }) {
   return (

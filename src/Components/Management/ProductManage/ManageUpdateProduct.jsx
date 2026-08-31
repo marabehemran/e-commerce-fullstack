@@ -1,41 +1,17 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 
-import {
-  ImagePlus,
-  LayoutGrid,
-  Plus,
-  X,
-} from "lucide-react";
-
-import {
-  useDispatch,
-  useSelector,
-} from "react-redux";
-
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { ImagePlus, LayoutGrid, Plus, X } from "lucide-react";
 
 import {
   getProduct,
   updateProduct,
 } from "../../../features/products/productSlice";
 
-import {
-  getAllCategories,
-} from "../../../features/categories/categorySlice";
-
-import {
-  getAllBrands,
-} from "../../../features/brands/brandSlice";
-
-import {
-  getSubCategoriesByCategory,
-} from "../../../features/subCategories/subCategorySlice";
+import { getAllCategories } from "../../../features/categories/categorySlice";
+import { getAllBrands } from "../../../features/brands/brandSlice";
+import { getSubCategoriesByCategory } from "../../../features/subCategories/subCategorySlice";
 
 function ManageUpdateProduct() {
   const dispatch = useDispatch();
@@ -44,73 +20,29 @@ function ManageUpdateProduct() {
 
   const { id } = useParams();
 
-  const [title, setTitle] =
-    useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [priceAfterDiscount, setPriceAfterDiscount] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [brandId, setBrandId] = useState("");
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
+  const [colors, setColors] = useState([]);
+  const [color, setColor] = useState("");
+  const [imageCover, setImageCover] = useState(null);
+  const [images, setImages] = useState([]);
+  const [updateError, setUpdateError] = useState(null);
 
-  const [description, setDescription] =
-    useState("");
+  const { product, loading } = useSelector((state) => state.products);
 
-  const [price, setPrice] =
-    useState("");
+  const categories = useSelector((state) => state.categories.allCategories);
 
-  const [
-    priceAfterDiscount,
-    setPriceAfterDiscount,
-  ] = useState("");
+  const brands = useSelector((state) => state.brands.allBrands);
 
-  const [quantity, setQuantity] =
-    useState("");
-
-  const [categoryId, setCategoryId] =
-    useState("");
-
-  const [brandId, setBrandId] =
-    useState("");
-
-  const [
-    selectedSubCategories,
-    setSelectedSubCategories,
-  ] = useState([]);
-
-  const [colors, setColors] =
-    useState([]);
-
-  const [color, setColor] =
-    useState("");
-
-  const [imageCover, setImageCover] =
-    useState(null);
-
-  const [images, setImages] =
-    useState([]);
-
-  const [
-    updateError,
-    setUpdateError,
-  ] = useState(null);
-
-  const {
-    product,
-    loading,
-  } = useSelector(
-    (state) => state.products,
+  const categorySubCategories = useSelector(
+    (state) => state.subCategories.categorySubCategories,
   );
-
-  const categories = useSelector(
-    (state) =>
-      state.categories.allCategories,
-  );
-
-  const brands = useSelector(
-    (state) => state.brands.allBrands,
-  );
-
-  const categorySubCategories =
-    useSelector(
-      (state) =>
-        state.subCategories
-          .categorySubCategories,
-    );
 
   useEffect(() => {
     dispatch(getProduct(id));
@@ -121,168 +53,91 @@ function ManageUpdateProduct() {
   }, [dispatch, id]);
 
   useEffect(() => {
-    if (
-      product &&
-      product._id === id
-    ) {
-      setTitle(
-        product.title || "",
-      );
+    if (product && product._id === id) {
+      setTitle(product.title || "");
 
-      setDescription(
-        product.description || "",
-      );
+      setDescription(product.description || "");
 
-      setPrice(
-        product.price ?? "",
-      );
+      setPrice(product.price ?? "");
 
-      setPriceAfterDiscount(
-        product.priceAfterDiscount ??
-          "",
-      );
+      setPriceAfterDiscount(product.priceAfterDiscount ?? "");
 
-      setQuantity(
-        product.quantity ?? "",
-      );
+      setQuantity(product.quantity ?? "");
 
-      const currentCategoryId =
-        product.category?._id ||
-        product.category ||
-        "";
+      const currentCategoryId = product.category?._id || product.category || "";
 
-      setCategoryId(
-        currentCategoryId,
-      );
+      setCategoryId(currentCategoryId);
 
-      setBrandId(
-        product.brand?._id ||
-          product.brand ||
-          "",
-      );
+      setBrandId(product.brand?._id || product.brand || "");
 
       const currentSubCategories =
         product.subCategories?.map(
-          (subCategory) =>
-            subCategory?._id ||
-            subCategory,
+          (subCategory) => subCategory?._id || subCategory,
         ) || [];
 
-      setSelectedSubCategories(
-        currentSubCategories,
-      );
+      setSelectedSubCategories(currentSubCategories);
 
-      setColors(
-        product.colors || [],
-      );
+      setColors(product.colors || []);
 
       if (currentCategoryId) {
-        dispatch(
-          getSubCategoriesByCategory(
-            currentCategoryId,
-          ),
-        );
+        dispatch(getSubCategoriesByCategory(currentCategoryId));
       }
     }
   }, [product, id, dispatch]);
 
-  const handleCategoryChange = (
-    e,
-  ) => {
-    const newCategoryId =
-      e.target.value;
+  const handleCategoryChange = (e) => {
+    const newCategoryId = e.target.value;
 
-    setCategoryId(
-      newCategoryId,
-    );
+    setCategoryId(newCategoryId);
 
     setSelectedSubCategories([]);
 
     if (newCategoryId) {
-      dispatch(
-        getSubCategoriesByCategory(
-          newCategoryId,
-        ),
-      );
+      dispatch(getSubCategoriesByCategory(newCategoryId));
     }
   };
 
-  const handleSubCategoryChange = (
-    e,
-  ) => {
-    const selectedValues =
-      Array.from(
-        e.target.selectedOptions,
-      ).map(
-        (option) =>
-          option.value,
-      );
-
-    setSelectedSubCategories(
-      selectedValues,
+  const handleSubCategoryChange = (e) => {
+    const selectedValues = Array.from(e.target.selectedOptions).map(
+      (option) => option.value,
     );
+
+    setSelectedSubCategories(selectedValues);
   };
 
   const handleAddColor = () => {
-    const newColor =
-      color.trim();
+    const newColor = color.trim();
 
     if (!newColor) {
       return;
     }
 
-    if (
-      !colors.includes(newColor)
-    ) {
-      setColors([
-        ...colors,
-        newColor,
-      ]);
+    if (!colors.includes(newColor)) {
+      setColors([...colors, newColor]);
     }
 
     setColor("");
   };
 
-  const handleRemoveColor = (
-    colorToRemove,
-  ) => {
-    setColors(
-      colors.filter(
-        (item) =>
-          item !==
-          colorToRemove,
-      ),
-    );
+  const handleRemoveColor = (colorToRemove) => {
+    setColors(colors.filter((item) => item !== colorToRemove));
   };
 
-  const handleImagesChange = (
-    e,
-  ) => {
-    const selectedImages =
-      Array.from(
-        e.target.files,
-      );
+  const handleImagesChange = (e) => {
+    const selectedImages = Array.from(e.target.files);
 
-    if (
-      selectedImages.length > 5
-    ) {
-      setUpdateError(
-        "يمكنك اختيار 5 صور إضافية كحد أقصى",
-      );
+    if (selectedImages.length > 5) {
+      setUpdateError("يمكنك اختيار 5 صور إضافية كحد أقصى");
 
       return;
     }
 
     setUpdateError(null);
 
-    setImages(
-      selectedImages,
-    );
+    setImages(selectedImages);
   };
 
-  const handleSubmit = async (
-    e,
-  ) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setUpdateError(null);
@@ -294,146 +149,80 @@ function ManageUpdateProduct() {
       !quantity ||
       !categoryId
     ) {
-      setUpdateError(
-        "يرجى تعبئة جميع الحقول المطلوبة",
-      );
+      setUpdateError("يرجى تعبئة جميع الحقول المطلوبة");
 
       return;
     }
 
-    const formData =
-      new FormData();
+    const formData = new FormData();
 
-    formData.append(
-      "title",
-      title.trim(),
-    );
+    formData.append("title", title.trim());
 
-    formData.append(
-      "description",
-      description.trim(),
-    );
+    formData.append("description", description.trim());
 
-    formData.append(
-      "price",
-      price,
-    );
+    formData.append("price", price);
 
-    formData.append(
-      "priceAfterDiscount",
-      priceAfterDiscount,
-    );
+    formData.append("priceAfterDiscount", priceAfterDiscount);
 
-    formData.append(
-      "quantity",
-      quantity,
-    );
+    formData.append("quantity", quantity);
 
-    formData.append(
-      "category",
-      categoryId,
-    );
+    formData.append("category", categoryId);
 
-    formData.append(
-      "brand",
-      brandId,
-    );
+    formData.append("brand", brandId);
 
-    if (
-      selectedSubCategories.length > 0
-    ) {
-      selectedSubCategories.forEach(
-        (subCategoryId) => {
-          formData.append(
-            "subCategories",
-            subCategoryId,
-          );
-        },
-      );
+    if (selectedSubCategories.length > 0) {
+      selectedSubCategories.forEach((subCategoryId) => {
+        formData.append("subCategories", subCategoryId);
+      });
     } else {
-      formData.append(
-        "subCategories",
-        "",
-      );
+      formData.append("subCategories", "");
     }
 
     if (colors.length > 0) {
-      colors.forEach(
-        (item) => {
-          formData.append(
-            "colors",
-            item,
-          );
-        },
-      );
+      colors.forEach((item) => {
+        formData.append("colors", item);
+      });
     } else {
-      formData.append(
-        "colors",
-        "",
-      );
+      formData.append("colors", "");
     }
 
     if (imageCover) {
-      formData.append(
-        "imageCover",
-        imageCover,
-      );
+      formData.append("imageCover", imageCover);
     }
 
-    images.forEach(
-      (image) => {
-        formData.append(
-          "images",
-          image,
-        );
-      },
-    );
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
 
     try {
       await dispatch(
         updateProduct({
           id,
-          productData:
-            formData,
+          productData: formData,
         }),
       ).unwrap();
 
-      navigate(
-        "/manageallproducts",
-      );
+      navigate("/manageallproducts");
     } catch (error) {
       setUpdateError(error);
     }
   };
 
-  if (
-    loading &&
-    (!product ||
-      product._id !== id)
-  ) {
-    return (
-      <p className="text-center">
-        جاري تحميل المنتج...
-      </p>
-    );
+  if (loading && (!product || product._id !== id)) {
+    return <p className="text-center">جاري تحميل المنتج...</p>;
   }
 
   return (
     <div className="space-y-8">
-
       <div className="flex items-center gap-3">
         <div className="grid size-12 place-items-center rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
           <LayoutGrid />
         </div>
 
         <div>
-          <h1 className="text-2xl font-black">
-            تعديل المنتج
-          </h1>
+          <h1 className="text-2xl font-black">تعديل المنتج</h1>
 
-          <p className="text-sm text-slate-500">
-            تعديل بيانات المنتج
-          </p>
+          <p className="text-sm text-slate-500">تعديل بيانات المنتج</p>
         </div>
       </div>
 
@@ -441,10 +230,7 @@ function ManageUpdateProduct() {
         onSubmit={handleSubmit}
         className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900"
       >
-
         <div className="grid gap-5 md:grid-cols-2">
-
-          {/* CURRENT COVER */}
 
           {product?.imageCover && (
             <div className="md:col-span-2">
@@ -453,18 +239,13 @@ function ManageUpdateProduct() {
               </label>
 
               <img
-                src={
-                  product.imageCover
-                }
-                alt={
-                  product.title
-                }
+                src={product.imageCover}
+                alt={product.title}
                 className="h-52 w-full rounded-2xl object-cover"
               />
             </div>
           )}
 
-          {/* NEW COVER */}
 
           <div className="md:col-span-2">
             <label className="mb-2 block font-black">
@@ -474,64 +255,40 @@ function ManageUpdateProduct() {
             <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 p-6 text-slate-500 dark:border-slate-700">
               <ImagePlus />
 
-              <span>
-                اختر صورة جديدة
-              </span>
+              <span>اختر صورة جديدة</span>
 
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) =>
-                  setImageCover(
-                    e.target
-                      .files[0],
-                  )
-                }
+                onChange={(e) => setImageCover(e.target.files[0])}
               />
             </label>
 
             {imageCover && (
-              <p className="mt-2 text-sm text-slate-500">
-                {
-                  imageCover.name
-                }
-              </p>
+              <p className="mt-2 text-sm text-slate-500">{imageCover.name}</p>
             )}
           </div>
 
-          {/* CURRENT EXTRA IMAGES */}
-
-          {product?.images
-            ?.length > 0 && (
+          {product?.images?.length > 0 && (
             <div className="md:col-span-2">
               <label className="mb-2 block font-black">
                 الصور الإضافية الحالية
               </label>
 
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                {product.images.map(
-                  (
-                    image,
-                    index,
-                  ) => (
-                    <img
-                      key={
-                        image
-                      }
-                      src={
-                        image
-                      }
-                      alt={`product-${index}`}
-                      className="h-32 w-full rounded-2xl object-cover"
-                    />
-                  ),
-                )}
+                {product.images.map((image, index) => (
+                  <img
+                    key={image}
+                    src={image}
+                    alt={`product-${index}`}
+                    className="h-32 w-full rounded-2xl object-cover"
+                  />
+                ))}
               </div>
             </div>
           )}
 
-          {/* NEW EXTRA IMAGES */}
 
           <div className="md:col-span-2">
             <label className="mb-2 block font-black">
@@ -541,349 +298,204 @@ function ManageUpdateProduct() {
             <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 p-6 text-slate-500 dark:border-slate-700">
               <ImagePlus />
 
-              <span>
-                اختر صور جديدة
-              </span>
+              <span>اختر صور جديدة</span>
 
               <input
                 type="file"
                 accept="image/*"
                 multiple
                 className="hidden"
-                onChange={
-                  handleImagesChange
-                }
+                onChange={handleImagesChange}
               />
             </label>
 
-            {images.length >
-              0 && (
+            {images.length > 0 && (
               <p className="mt-2 text-sm text-slate-500">
-                تم اختيار{" "}
-                {
-                  images.length
-                }{" "}
-                صور
+                تم اختيار {images.length} صور
               </p>
             )}
           </div>
 
-          {/* TITLE */}
 
           <div>
-            <label className="mb-2 block font-black">
-              اسم المنتج
-            </label>
+            <label className="mb-2 block font-black">اسم المنتج</label>
 
             <input
               type="text"
               value={title}
-              onChange={(e) =>
-                setTitle(
-                  e.target.value,
-                )
-              }
+              onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
             />
           </div>
 
-          {/* QUANTITY */}
 
           <div>
-            <label className="mb-2 block font-black">
-              الكمية
-            </label>
+            <label className="mb-2 block font-black">الكمية</label>
 
             <input
               type="number"
               min="0"
               value={quantity}
-              onChange={(e) =>
-                setQuantity(
-                  e.target.value,
-                )
-              }
+              onChange={(e) => setQuantity(e.target.value)}
               className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
             />
           </div>
 
-          {/* DESCRIPTION */}
 
           <div className="md:col-span-2">
-            <label className="mb-2 block font-black">
-              الوصف
-            </label>
+            <label className="mb-2 block font-black">الوصف</label>
 
             <textarea
               value={description}
-              onChange={(e) =>
-                setDescription(
-                  e.target.value,
-                )
-              }
+              onChange={(e) => setDescription(e.target.value)}
               className="min-h-32 w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
             />
           </div>
 
-          {/* PRICE */}
 
           <div>
-            <label className="mb-2 block font-black">
-              السعر
-            </label>
+            <label className="mb-2 block font-black">السعر</label>
 
             <input
               type="number"
               min="0"
               value={price}
-              onChange={(e) =>
-                setPrice(
-                  e.target.value,
-                )
-              }
+              onChange={(e) => setPrice(e.target.value)}
               className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
             />
           </div>
 
-          {/* DISCOUNT PRICE */}
-
           <div>
-            <label className="mb-2 block font-black">
-              السعر بعد الخصم
-            </label>
+            <label className="mb-2 block font-black">السعر بعد الخصم</label>
 
             <input
               type="number"
               min="0"
-              value={
-                priceAfterDiscount
-              }
-              onChange={(e) =>
-                setPriceAfterDiscount(
-                  e.target.value,
-                )
-              }
+              value={priceAfterDiscount}
+              onChange={(e) => setPriceAfterDiscount(e.target.value)}
               className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
               placeholder="اختياري"
             />
           </div>
 
-          {/* CATEGORY */}
 
           <div>
-            <label className="mb-2 block font-black">
-              التصنيف
-            </label>
+            <label className="mb-2 block font-black">التصنيف</label>
 
             <select
               value={categoryId}
-              onChange={
-                handleCategoryChange
-              }
+              onChange={handleCategoryChange}
               className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
             >
-              <option value="">
-                اختر التصنيف
-              </option>
+              <option value="">اختر التصنيف</option>
 
-              {categories.map(
-                (category) => (
-                  <option
-                    key={
-                      category._id
-                    }
-                    value={
-                      category._id
-                    }
-                  >
-                    {
-                      category.name
-                    }
-                  </option>
-                ),
-              )}
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* BRAND */}
-
           <div>
-            <label className="mb-2 block font-black">
-              البراند
-            </label>
+            <label className="mb-2 block font-black">البراند</label>
 
             <select
               value={brandId}
-              onChange={(e) =>
-                setBrandId(
-                  e.target.value,
-                )
-              }
+              onChange={(e) => setBrandId(e.target.value)}
               className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
             >
-              <option value="">
-                بدون براند
-              </option>
+              <option value="">بدون براند</option>
 
-              {brands.map(
-                (brand) => (
-                  <option
-                    key={
-                      brand._id
-                    }
-                    value={
-                      brand._id
-                    }
-                  >
-                    {
-                      brand.name
-                    }
-                  </option>
-                ),
-              )}
+              {brands.map((brand) => (
+                <option key={brand._id} value={brand._id}>
+                  {brand.name}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* SUBCATEGORIES */}
-
           <div className="md:col-span-2">
-            <label className="mb-2 block font-black">
-              التصنيفات الفرعية
-            </label>
+            <label className="mb-2 block font-black">التصنيفات الفرعية</label>
 
             <select
               multiple
-              disabled={
-                !categoryId
-              }
-              value={
-                selectedSubCategories
-              }
-              onChange={
-                handleSubCategoryChange
-              }
+              disabled={!categoryId}
+              value={selectedSubCategories}
+              onChange={handleSubCategoryChange}
               className="min-h-32 w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 disabled:opacity-50 dark:border-slate-700"
             >
-              {categorySubCategories.map(
-                (
-                  subCategory,
-                ) => (
-                  <option
-                    key={
-                      subCategory._id
-                    }
-                    value={
-                      subCategory._id
-                    }
-                  >
-                    {
-                      subCategory.name
-                    }
-                  </option>
-                ),
-              )}
+              {categorySubCategories.map((subCategory) => (
+                <option key={subCategory._id} value={subCategory._id}>
+                  {subCategory.name}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* COLORS */}
-
           <div className="md:col-span-2">
-            <label className="mb-2 block font-black">
-              الألوان
-            </label>
+            <label className="mb-2 block font-black">الألوان</label>
 
             <div className="flex gap-2">
-
               <input
                 type="text"
                 value={color}
-                onChange={(e) =>
-                  setColor(
-                    e.target.value,
-                  )
-                }
+                onChange={(e) => setColor(e.target.value)}
                 className="flex-1 rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
                 placeholder="مثال: Black"
               />
 
               <button
                 type="button"
-                onClick={
-                  handleAddColor
-                }
+                onClick={handleAddColor}
                 className="grid size-12 cursor-pointer place-items-center rounded-2xl bg-violet-100 text-violet-700"
               >
                 <Plus />
               </button>
-
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
+              {colors.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 dark:bg-slate-800"
+                >
+                  <span>{item}</span>
 
-              {colors.map(
-                (item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 dark:bg-slate-800"
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveColor(item)}
+                    className="cursor-pointer"
                   >
-                    <span>
-                      {item}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleRemoveColor(
-                          item,
-                        )
-                      }
-                      className="cursor-pointer"
-                    >
-                      <X
-                        size={16}
-                      />
-                    </button>
-                  </div>
-                ),
-              )}
-
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
-
         </div>
 
         {updateError && (
-          <p className="mt-4 font-bold text-rose-600">
-            {updateError}
-          </p>
+          <p className="mt-4 font-bold text-rose-600">{updateError}</p>
         )}
 
         <div className="mt-6 flex gap-3">
-
           <button
             type="submit"
             disabled={loading}
             className="cursor-pointer rounded-2xl bg-violet-700 px-6 py-3 font-black text-white disabled:opacity-50"
           >
-            {loading
-              ? "جاري الحفظ..."
-              : "حفظ التعديلات"}
+            {loading ? "جاري الحفظ..." : "حفظ التعديلات"}
           </button>
 
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                "/manageallproducts",
-              )
-            }
+            onClick={() => navigate("/manageallproducts")}
             className="cursor-pointer rounded-2xl bg-slate-100 px-6 py-3 font-black text-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
             إلغاء
           </button>
-
         </div>
-
       </form>
     </div>
   );

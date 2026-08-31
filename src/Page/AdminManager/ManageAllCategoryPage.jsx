@@ -1,4 +1,3 @@
-
 import ManagementAllCategories from "../../Components/Management/CategoryManage/ManagementAllCategories";
 import ManagementSideBar from "../../Components/Management/ManagementSideBar";
 function AdminAllCategoryPage() {

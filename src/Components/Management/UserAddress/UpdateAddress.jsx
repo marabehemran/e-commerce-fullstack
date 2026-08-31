@@ -1,117 +1,182 @@
-import React from "react";
-import { MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { ArrowRight, MapPin, Save } from "lucide-react";
+
+import {
+  getAddresses,
+  updateAddress,
+  resetAddressStatus,
+} from "../../../features/addresses/addressSlice";
 
 function UpdateAddress() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { id } = useParams();
+
+  const { addresses, loading, error } = useSelector((state) => state.addresses);
+
+  const [alias, setAlias] = useState("");
+  const [details, setDetails] = useState("");
+  const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+
+  const [postalCode, setPostalCode] = useState("");
+
+
+  useEffect(() => {
+    if (addresses.length === 0) {
+      dispatch(getAddresses());
+    }
+  }, [dispatch, addresses.length]);
+
+
+  useEffect(() => {
+    const address = addresses.find((item) => item._id === id);
+
+    if (address) {
+      setAlias(address.alias || "");
+      setDetails(address.details || "");
+      setPhone(address.phone || "");
+      setCity(address.city || "");
+      setPostalCode(address.postalCode || "");
+    }
+  }, [addresses, id]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetAddressStatus());
+    };
+  }, [dispatch]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!alias.trim() || !details.trim() || !phone.trim() || !city.trim()) {
+      return;
+    }
+
+    const addressData = {
+      alias: alias.trim(),
+      details: details.trim(),
+      phone: phone.trim(),
+      city: city.trim(),
+      postalCode: postalCode.trim(),
+    };
+
+    try {
+      await dispatch(
+        updateAddress({
+          addressId: id,
+          addressData,
+        }),
+      ).unwrap();
+
+      navigate("/user/alladdress");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    <div >
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <small className="font-black text-violet-600">حسابي</small>
+    <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
+      <div>
+        <small className="font-black text-violet-600">حسابي</small>
 
-          <h1 className="mt-1 flex items-center gap-2 text-3xl font-black">
-            <MapPin className="text-violet-600" size={30} />
-            تعديل العنوان
-          </h1>
-        </div>
+        <h1 className="mt-1 flex items-center gap-2 text-3xl font-black">
+          <MapPin size={30} className="text-violet-600" />
+          تعديل العنوان
+        </h1>
 
-        <button
-          type="button"
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 font-black dark:border-slate-700 dark:bg-slate-900"
-        >
-          رجوع
-        </button>
+        <p className="mt-2 text-slate-500 dark:text-slate-400">
+          قم بتعديل بيانات العنوان
+        </p>
       </div>
 
-      <form className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
-        <div className="grid gap-5 md:grid-cols-2">
+      <form onSubmit={handleSubmit} className="mt-6">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="mb-2 block font-black">اسم العنوان</label>
+            <label className="mb-2 block font-bold">اسم العنوان</label>
 
             <input
               type="text"
-              defaultValue="المنزل"
-              placeholder="مثال: المنزل، العمل..."
+              value={alias}
+              onChange={(e) => setAlias(e.target.value)}
+              placeholder="مثال: المنزل"
               className="w-full rounded-2xl border p-3.5 dark:border-slate-700 dark:bg-slate-800"
             />
           </div>
 
           <div>
-            <label className="mb-2 block font-black">رقم الهاتف</label>
+            <label className="mb-2 block font-bold">رقم الهاتف</label>
 
             <input
               type="tel"
-              defaultValue="0591234567"
-              placeholder="رقم الهاتف"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="0590000000"
               className="w-full rounded-2xl border p-3.5 dark:border-slate-700 dark:bg-slate-800"
             />
           </div>
 
           <div>
-            <label className="mb-2 block font-black">المدينة</label>
+            <label className="mb-2 block font-bold">المدينة</label>
 
             <input
               type="text"
-              defaultValue="جنين"
-              placeholder="المدينة"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="جنين"
               className="w-full rounded-2xl border p-3.5 dark:border-slate-700 dark:bg-slate-800"
             />
           </div>
 
           <div>
-            <label className="mb-2 block font-black">الرمز البريدي</label>
+            <label className="mb-2 block font-bold">الرمز البريدي</label>
 
             <input
               type="text"
-              defaultValue="00970"
-              placeholder="الرمز البريدي"
+              value={postalCode}
+              onChange={(e) => setPostalCode(e.target.value)}
+              placeholder="اختياري"
               className="w-full rounded-2xl border p-3.5 dark:border-slate-700 dark:bg-slate-800"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="mb-2 block font-black">تفاصيل العنوان</label>
+            <label className="mb-2 block font-bold">تفاصيل العنوان</label>
 
             <textarea
-              defaultValue="شارع الجامعة، بالقرب من السوق الرئيسي"
-              placeholder="اكتب تفاصيل العنوان بالتفصيل..."
-              className="min-h-32 w-full rounded-2xl border p-3.5 dark:border-slate-700 dark:bg-slate-800"
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              placeholder="اكتب تفاصيل العنوان..."
+              className="min-h-28 w-full rounded-2xl border p-3.5 dark:border-slate-700 dark:bg-slate-800"
             />
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl bg-slate-50 p-5 dark:bg-slate-800">
-          <div className="flex items-center gap-2">
-            <MapPin size={20} className="text-violet-600" />
+        {error && <p className="mt-4 font-bold text-red-600">{error}</p>}
 
-            <span className="font-black">معاينة العنوان</span>
-          </div>
-
-          <div className="mt-3">
-            <p className="font-black">المنزل</p>
-
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              شارع الجامعة، بالقرب من السوق الرئيسي
-            </p>
-
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              جنين • 00970 • 0591234567
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 flex flex-wrap justify-end gap-3">
+        <div className="mt-6 flex gap-3">
           <button
-            type="button"
-            className="rounded-2xl border border-slate-200 bg-white px-5 py-3 font-black dark:border-slate-700 dark:bg-slate-900"
+            type="submit"
+            disabled={loading}
+            className="cursor-pointer flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 font-black text-white disabled:opacity-60"
           >
-            إلغاء
+            <Save size={19} />
+
+            {loading ? "جاري الحفظ..." : "حفظ التعديلات"}
           </button>
 
           <button
-            type="submit"
-            className="rounded-2xl bg-violet-700 px-6 py-3.5 font-black text-white"
+            type="button"
+            onClick={() => navigate("/user/alladdress")}
+            className="cursor-pointer flex items-center gap-2 rounded-2xl border border-slate-200 px-5 py-3 font-black dark:border-slate-700"
           >
-            حفظ التعديلات
+            <ArrowRight size={19} />
+            رجوع
           </button>
         </div>
       </form>

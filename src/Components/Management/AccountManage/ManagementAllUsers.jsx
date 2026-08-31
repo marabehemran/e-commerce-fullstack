@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import ManageUserCard from "./ManageUserCard";
-import { Plus, Users } from "lucide-react";
 import ManagementTable from "../ManagementTable";
 import Pagination from "../../Utility/Pagination";
-import {
-  createUser,
-  getUsers,
-} from "../../../features/users/userSlice";
+
+import { Plus, Users } from "lucide-react";
+
+import { createUser, getUsers } from "../../../features/users/userSlice";
 
 function ManagementAllUsers() {
   const dispatch = useDispatch();
@@ -15,17 +15,32 @@ function ManagementAllUsers() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [name, setName] = useState("");
+
   const [email, setEmail] = useState("");
+
   const [role, setRole] = useState("user");
+
   const [password, setPassword] = useState("");
+
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const { users, paginationResult, loading, error } = useSelector(
     (state) => state.users,
   );
 
   useEffect(() => {
-    dispatch(getUsers(currentPage));
-  }, [dispatch, currentPage]);
+    dispatch(
+      getUsers({
+        page: currentPage,
+        keyword: searchKeyword,
+      }),
+    );
+  }, [dispatch, currentPage, searchKeyword]);
+
+  const handleSearchChange = (value) => {
+    setSearchKeyword(value);
+    setCurrentPage(1);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,14 +65,28 @@ function ManagementAllUsers() {
       setRole("user");
       setPassword("");
 
-      dispatch(getUsers(currentPage));
+      dispatch(
+        getUsers({
+          page: currentPage,
+          keyword: searchKeyword,
+        }),
+      );
     } catch (error) {
       console.error(error);
     }
   };
 
   const handleDeleted = () => {
-    dispatch(getUsers(currentPage));
+    if (users.length === 1 && currentPage > 1) {
+      setCurrentPage((page) => page - 1);
+    } else {
+      dispatch(
+        getUsers({
+          page: currentPage,
+          keyword: searchKeyword,
+        }),
+      );
+    }
   };
 
   return (
@@ -69,7 +98,6 @@ function ManagementAllUsers() {
           <span className="text-violet-600">
             <Users />
           </span>
-
           المستخدمون
         </h1>
       </div>
@@ -79,7 +107,6 @@ function ManagementAllUsers() {
           <span>
             <Plus />
           </span>
-
           إضافة جديد
         </summary>
 
@@ -101,9 +128,7 @@ function ManagementAllUsers() {
             </div>
 
             <div>
-              <label className="mb-2 block font-black">
-                البريد الإلكتروني
-              </label>
+              <label className="mb-2 block font-black">البريد الإلكتروني</label>
 
               <input
                 type="email"
@@ -123,9 +148,7 @@ function ManagementAllUsers() {
                 className="w-full rounded-2xl border p-3.5 font-bold dark:border-slate-700 dark:bg-slate-800"
               >
                 <option value="user">User</option>
-
                 <option value="manager">Manager</option>
-
                 <option value="admin">Admin</option>
               </select>
             </div>
@@ -158,13 +181,12 @@ function ManagementAllUsers() {
         </p>
       )}
 
-      {error && (
-        <p className="mb-4 font-bold text-red-500">
-          {error}
-        </p>
-      )}
+      {error && <p className="mb-4 font-bold text-red-500">{error}</p>}
 
-      <ManagementTable>
+      <ManagementTable
+        searchValue={searchKeyword}
+        onSearchChange={handleSearchChange}
+      >
         {users.map((user) => (
           <ManageUserCard
             key={user._id}
@@ -184,4 +206,3 @@ function ManagementAllUsers() {
 }
 
 export default ManagementAllUsers;
-

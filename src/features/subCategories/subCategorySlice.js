@@ -4,10 +4,11 @@ import api from "../../api/axios";
 // GET SUBCATEGORIES WITH PAGINATION
 export const getSubCategories = createAsyncThunk(
   "subCategories/getSubCategories",
-  async (page = 1, thunkAPI) => {
+
+  async ({ page = 1, keyword = "" } = {}, thunkAPI) => {
     try {
       const response = await api.get(
-        `/subcategories?page=${page}&limit=10`,
+        `/subcategories?page=${page}&limit=10&keyword=${encodeURIComponent(keyword)}`,
       );
 
       return response.data;

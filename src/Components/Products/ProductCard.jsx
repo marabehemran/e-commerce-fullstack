@@ -1,9 +1,7 @@
-import React from "react";
-
-import { Heart } from "lucide-react";
-
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+
+import { Heart } from "lucide-react";
 
 import {
   addProductToWishlist,

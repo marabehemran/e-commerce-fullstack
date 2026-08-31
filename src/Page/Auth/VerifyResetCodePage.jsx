@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+
 import { verifyResetCode } from "../../features/auth/authSlice";
 
 function VerifyResetCodePage() {
@@ -41,9 +41,7 @@ function VerifyResetCodePage() {
         </p>
 
         {resetEmail && (
-          <p className="mt-2 text-sm font-bold text-violet-700">
-            {resetEmail}
-          </p>
+          <p className="mt-2 text-sm font-bold text-violet-700">{resetEmail}</p>
         )}
 
         <form onSubmit={handleSubmit} className="mt-7 space-y-4">
@@ -57,9 +55,7 @@ function VerifyResetCodePage() {
             maxLength={6}
           />
 
-          {error && (
-            <p className="text-sm font-bold text-red-500">{error}</p>
-          )}
+          {error && <p className="text-sm font-bold text-red-500">{error}</p>}
 
           <button
             type="submit"

@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import ManageBrandCard from "./ManageBrandCard";
-import { GitBranch, ImagePlus } from "lucide-react";
 import ManagementTable from "../ManagementTable";
 import Pagination from "../../Utility/Pagination";
 
-import {
-  createBrand,
-  getBrands,
-} from "../../../features/brands/brandSlice";
+import { GitBranch, ImagePlus } from "lucide-react";
+
+import { createBrand, getBrands } from "../../../features/brands/brandSlice";
 
 function ManagementAllBrands() {
   const dispatch = useDispatch();
@@ -19,26 +17,32 @@ function ManagementAllBrands() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [createError, setCreateError] = useState(null);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
-  const brands = useSelector(
-    (state) => state.brands.brands,
-  );
+  const brands = useSelector((state) => state.brands.brands);
 
   const paginationResult = useSelector(
     (state) => state.brands.paginationResult,
   );
 
   useEffect(() => {
-    dispatch(getBrands(currentPage));
-  }, [currentPage, dispatch]);
+    dispatch(
+      getBrands({
+        page: currentPage,
+        keyword: searchKeyword,
+      }),
+    );
+  }, [currentPage, searchKeyword, dispatch]);
 
   useEffect(() => {
     if (!image) {
       setPreviewUrl(null);
+
       return;
     }
 
     const imageUrl = URL.createObjectURL(image);
+
     setPreviewUrl(imageUrl);
 
     return () => {
@@ -46,16 +50,24 @@ function ManagementAllBrands() {
     };
   }, [image]);
 
+  const handleSearchChange = (value) => {
+    setSearchKeyword(value);
+    setCurrentPage(1);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setCreateError(null);
+
     if (!name.trim()) {
       return;
     }
 
     const formData = new FormData();
+
     formData.append("name", name.trim());
+
     if (image) {
       formData.append("image", image);
     }
@@ -64,10 +76,16 @@ function ManagementAllBrands() {
       await dispatch(createBrand(formData)).unwrap();
 
       setName("");
+
       setImage(null);
 
       if (currentPage === 1) {
-        dispatch(getBrands(1));
+        dispatch(
+          getBrands({
+            page: 1,
+            keyword: searchKeyword,
+          }),
+        );
       } else {
         setCurrentPage(1);
       }
@@ -80,22 +98,24 @@ function ManagementAllBrands() {
     if (brands.length === 1 && currentPage > 1) {
       setCurrentPage((page) => page - 1);
     } else {
-      dispatch(getBrands(currentPage));
+      dispatch(
+        getBrands({
+          page: currentPage,
+          keyword: searchKeyword,
+        }),
+      );
     }
   };
 
   return (
     <div>
       <div className="mb-6">
-        <small className="font-black text-violet-600">
-          إدارة المتجر
-        </small>
+        <small className="font-black text-violet-600">إدارة المتجر</small>
 
         <h1 className="mt-1 text-3xl font-black">
           <span className="text-violet-600">
             <GitBranch />
           </span>
-
           الماركات
         </h1>
       </div>
@@ -123,9 +143,7 @@ function ManagementAllBrands() {
                 )}
               </span>
 
-              <b className="mt-2 block">
-                إضافة صورة الماركة
-              </b>
+              <b className="mt-2 block">إضافة صورة الماركة</b>
 
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 اختر صورة مناسبة للماركة
@@ -142,9 +160,7 @@ function ManagementAllBrands() {
             </label>
 
             <div className="flex flex-col justify-center">
-              <label className="mb-2 block font-black">
-                اسم الماركة
-              </label>
+              <label className="mb-2 block font-black">اسم الماركة</label>
 
               <input
                 type="text"
@@ -164,9 +180,7 @@ function ManagementAllBrands() {
           </div>
 
           {createError && (
-            <p className="mt-4 text-sm font-bold text-red-500">
-              {createError}
-            </p>
+            <p className="mt-4 text-sm font-bold text-red-500">{createError}</p>
           )}
 
           <button
@@ -178,7 +192,10 @@ function ManagementAllBrands() {
         </form>
       </details>
 
-      <ManagementTable>
+      <ManagementTable
+        searchValue={searchKeyword}
+        onSearchChange={handleSearchChange}
+      >
         {brands.map((brand) => (
           <ManageBrandCard
             key={brand._id}

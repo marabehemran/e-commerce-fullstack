@@ -1,4 +1,3 @@
-import React from "react";
 import ManagementAllBrands from "../../Components/Management/BrandManage/ManagementAllBrands";
 import ManagementSideBar from "../../Components/Management/ManagementSideBar";
 

@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { getLoggedUser, finishAuthCheck } from "./features/auth/authSlice";
 
@@ -8,7 +9,6 @@ import { getCart } from "./features/cart/cartSlice";
 
 import ProtectedRoute from "./Routes/ProtectedRoute";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import HomePage from "./Page/Home/HomePage";
 import NavBarLogin from "./Components/Utility/NavBarLogin";
@@ -48,6 +48,7 @@ import UserAllReviewsPage from "./Page/User/UserAllReviewsPage";
 import UserShowOrderDeatliesPage from "./Page/User/UserShowOrderDeatliesPage";
 import UserUpdateAddressPage from "./Page/User/UserUpdateAddressPage";
 import UserUpdateReviewPage from "./Page/User/UserUpdateReviewPage";
+import CardSuccessPage from "./Page/Checkout/CardSuccessPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -171,7 +172,7 @@ function App() {
           />
 
           <Route
-            path="/user/updateaddres"
+            path="/user/updateaddres/:id"
             element={<UserUpdateAddressPage />}
           />
 
@@ -179,6 +180,7 @@ function App() {
             path="/user/updatereview/:id"
             element={<UserUpdateReviewPage />}
           />
+          <Route path="/order/card-success" element={<CardSuccessPage />} />
         </Route>
       </Routes>
 

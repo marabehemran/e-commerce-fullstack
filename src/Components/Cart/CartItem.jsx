@@ -1,7 +1,6 @@
-import React from "react";
-import { Trash } from "lucide-react";
-
 import { useDispatch } from "react-redux";
+
+import { Trash } from "lucide-react";
 
 import {
   removeCartItem,

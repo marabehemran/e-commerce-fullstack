@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from "react";
-
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 import { useDispatch, useSelector } from "react-redux";
+
 import { loginUser } from "../../features/auth/authSlice";
 
-function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
+function LoginPage() {  
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const { user, loading, error } = useSelector((state) => state.auth);
   useEffect(() => {
@@ -86,7 +85,7 @@ function LoginPage() {
       <div>
         <button
           type="button"
-          onClick={() => handleQuickLogin("admin@gmail.com", "123456")}
+          onClick={() => handleQuickLogin("admin@test.com", "Test@1234")}
           disabled={loading}
           className="cursor-pointer mt-6 w-full font-black text-violet-700"
         >
@@ -95,7 +94,7 @@ function LoginPage() {
 
         <button
           type="button"
-          onClick={() => handleQuickLogin("manager@gmail.com", "123456")}
+          onClick={() => handleQuickLogin("user1@test.com", "Test@1234")}
           disabled={loading}
           className="cursor-pointer mt-6 w-full font-black text-violet-700"
         >
@@ -104,7 +103,7 @@ function LoginPage() {
 
         <button
           type="button"
-          onClick={() => handleQuickLogin("user@gmail.com", "123456")}
+          onClick={() => handleQuickLogin("user6@test.com", "Test@1234")}
           disabled={loading}
           className="cursor-pointer mt-6 w-full font-black text-violet-700"
         >

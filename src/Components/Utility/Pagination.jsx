@@ -1,4 +1,3 @@
-import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 function Pagination({ currentPage, numberOfPages, onPageChange }) {
@@ -46,7 +45,6 @@ function Pagination({ currentPage, numberOfPages, onPageChange }) {
       className="mt-12 flex items-center justify-center gap-2"
       dir="rtl"
     >
-      {/* السابق */}
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -69,7 +67,6 @@ function Pagination({ currentPage, numberOfPages, onPageChange }) {
         <ChevronRight size={17} />
       </button>
 
-      {/* أرقام الصفحات */}
       {pages.map((page, index) =>
         page === "..." ? (
           <span
@@ -98,7 +95,6 @@ function Pagination({ currentPage, numberOfPages, onPageChange }) {
         ),
       )}
 
-      {/* التالي */}
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === numberOfPages}

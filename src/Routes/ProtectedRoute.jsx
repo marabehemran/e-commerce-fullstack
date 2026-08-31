@@ -3,9 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 function ProtectedRoute({ allowedRoles }) {
-  const { user, token, authChecked } = useSelector(
-    (state) => state.auth,
-  );
+  const { user, token, authChecked } = useSelector((state) => state.auth);
 
   if (!authChecked) {
     return null;

@@ -1,13 +1,9 @@
-import React from "react";
-
 import { Package, ListFilter, Search } from "lucide-react";
 
 function SearchCountResult({
   count,
-
   sort,
   keyword,
-
   onSortChange,
   onKeywordChange,
 }) {
