@@ -27,13 +27,13 @@ const reviewSchema = new mongoose.Schema(
   { timestamps: true },
 );
 reviewSchema.pre(/^find/, function () {
-    this.populate({
-        path: "user",
-        select: "name profileImg",
-    }).populate({
-        path: "product",
-        select: "title imageCover category",
-    });
+  this.populate({
+    path: "user",
+    select: "name profileImg",
+  }).populate({
+    path: "product",
+    select: "title imageCover category",
+  });
 });
 
 reviewSchema.statics.calcAverageRatingsAndQuantity = async function (

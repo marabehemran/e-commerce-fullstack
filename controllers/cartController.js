@@ -6,16 +6,16 @@ const Coupon = require("../models/couponModel");
 const Cart = require("../models/cartModel");
 
 const calcTotalCartPrice = (cart) => {
-    let totalPrice = 0;
+  let totalPrice = 0;
 
-    cart.cartItems.forEach((item) => {
-        totalPrice += item.quantity * item.price;
-    });
+  cart.cartItems.forEach((item) => {
+    totalPrice += item.quantity * item.price;
+  });
 
-    cart.totalCartPrice = totalPrice;
-    cart.totalPriceAfterDiscount = undefined;
+  cart.totalCartPrice = totalPrice;
+  cart.totalPriceAfterDiscount = undefined;
 
-    return totalPrice;
+  return totalPrice;
 };
 
 /**
@@ -25,76 +25,73 @@ const calcTotalCartPrice = (cart) => {
  *  @access  private
  */
 exports.addProductToCart = asyncHandler(async (req, res, next) => {
-    const { productId, color } = req.body;
+  const { productId, color } = req.body;
 
-    const product = await Product.findById(productId);
+  const product = await Product.findById(productId);
 
-    if (!product) {
-        return next(
-            new ApiError(`No product found for this id: ${productId}`, 404),
-        );
-    }
+  if (!product) {
+    return next(
+      new ApiError(`No product found for this id: ${productId}`, 404),
+    );
+  }
 
-    // Use discounted price if product has discount
-    const productPrice =
-        product.priceAfterDiscount || product.price;
+  // Use discounted price if product has discount
+  const productPrice = product.priceAfterDiscount || product.price;
 
-    // Get cart for logged user
-    let cart = await Cart.findOne({
-        user: req.user._id,
+  // Get cart for logged user
+  let cart = await Cart.findOne({
+    user: req.user._id,
+  });
+
+  if (!cart) {
+    // Create cart for logged user
+    cart = await Cart.create({
+      user: req.user._id,
+
+      cartItems: [
+        {
+          product: productId,
+          color,
+          price: productPrice,
+        },
+      ],
     });
+  } else {
+    // Check if product already exists in cart
+    const productIndex = cart.cartItems.findIndex(
+      (item) => item.product.toString() === productId && item.color === color,
+    );
 
-    if (!cart) {
-        // Create cart for logged user
-        cart = await Cart.create({
-            user: req.user._id,
+    if (productIndex > -1) {
+      const cartItem = cart.cartItems[productIndex];
 
-            cartItems: [
-                {
-                    product: productId,
-                    color,
-                    price: productPrice,
-                },
-            ],
-        });
+      cartItem.quantity += 1;
+
+      cart.cartItems[productIndex] = cartItem;
     } else {
-        // Check if product already exists in cart
-        const productIndex = cart.cartItems.findIndex(
-            (item) =>
-                item.product.toString() === productId &&
-                item.color === color,
-        );
-
-        if (productIndex > -1) {
-            const cartItem = cart.cartItems[productIndex];
-
-            cartItem.quantity += 1;
-
-            cart.cartItems[productIndex] = cartItem;
-        } else {
-            // Add new product to cart
-            cart.cartItems.push({
-                product: productId,
-                color,
-                price: productPrice,
-            });
-        }
+      // Add new product to cart
+      cart.cartItems.push({
+        product: productId,
+        color,
+        price: productPrice,
+      });
     }
+  }
 
-    // Calculate total cart price
-    calcTotalCartPrice(cart);
+  // Calculate total cart price
+  calcTotalCartPrice(cart);
 
-    await cart.save();
+  await cart.save();
 
-    // Populate product data for frontend
-    await cart.populate("cartItems.product");
+  // Populate product data for frontend
+  await cart.populate("cartItems.product");
 
-    res.status(200).json({
-        status: "success",
-        message: "Product added to cart successfully",
-        numOfCartItems: cart.cartItems.length,
-        data: cart,
-    });
+  res.status(200).json({
+    status: "success",
+    message: "Product added to cart successfully",
+    numOfCartItems: cart.cartItems.length,
+    data: cart,
+  });
 });
 
 /**
@@ -104,24 +101,21 @@ exports.addProductToCart = asyncHandler(async (req, res, next) => {
  *  @access  private
  */
 exports.getLoggedUserCart = asyncHandler(async (req, res, next) => {
-    const cart = await Cart.findOne({
-        user: req.user._id,
-    }).populate("cartItems.product");
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  }).populate("cartItems.product");
 
-    if (!cart) {
-        return next(
-            new ApiError(
-                `There is no cart for this user id : ${req.user._id}`,
-                404,
-            ),
-        );
-    }
+  if (!cart) {
+    return next(
+      new ApiError(`There is no cart for this user id : ${req.user._id}`, 404),
+    );
+  }
 
-    res.status(200).json({
-        status: "success",
-        numOfCartItems: cart.cartItems.length,
-        data: cart,
-    });
+  res.status(200).json({
+    status: "success",
+    numOfCartItems: cart.cartItems.length,
+    data: cart,
+  });
 });
 
 /**
@@ -130,47 +124,42 @@ exports.getLoggedUserCart = asyncHandler(async (req, res, next) => {
  *  @method  DELETE
  *  @access  private
  */
-exports.removeSpecificCartItem = asyncHandler(
-    async (req, res, next) => {
-        const cart = await Cart.findOneAndUpdate(
-            {
-                user: req.user._id,
-            },
-            {
-                $pull: {
-                    cartItems: {
-                        _id: req.params.itemId,
-                    },
-                },
-            },
-            {
-                new: true,
-            },
-        );
-
-        if (!cart) {
-            return next(
-                new ApiError(
-                    `There is no cart for this user id : ${req.user._id}`,
-                    404,
-                ),
-            );
-        }
-
-        calcTotalCartPrice(cart);
-
-        await cart.save();
-
-        // Populate product data for frontend
-        await cart.populate("cartItems.product");
-
-        res.status(200).json({
-            status: "success",
-            numOfCartItems: cart.cartItems.length,
-            data: cart,
-        });
+exports.removeSpecificCartItem = asyncHandler(async (req, res, next) => {
+  const cart = await Cart.findOneAndUpdate(
+    {
+      user: req.user._id,
     },
-);
+    {
+      $pull: {
+        cartItems: {
+          _id: req.params.itemId,
+        },
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  if (!cart) {
+    return next(
+      new ApiError(`There is no cart for this user id : ${req.user._id}`, 404),
+    );
+  }
+
+  calcTotalCartPrice(cart);
+
+  await cart.save();
+
+  // Populate product data for frontend
+  await cart.populate("cartItems.product");
+
+  res.status(200).json({
+    status: "success",
+    numOfCartItems: cart.cartItems.length,
+    data: cart,
+  });
+});
 
 /**
  *  @desc    Clear logged user cart
@@ -179,11 +168,11 @@ exports.removeSpecificCartItem = asyncHandler(
  *  @access  private
  */
 exports.clearCart = asyncHandler(async (req, res, next) => {
-    await Cart.findOneAndDelete({
-        user: req.user._id,
-    });
+  await Cart.findOneAndDelete({
+    user: req.user._id,
+  });
 
-    res.status(204).send();
+  res.status(204).send();
 });
 
 /**
@@ -192,57 +181,46 @@ exports.clearCart = asyncHandler(async (req, res, next) => {
  *  @method  PUT
  *  @access  private
  */
-exports.updateCartItemQuantity = asyncHandler(
-    async (req, res, next) => {
-        const { quantity } = req.body;
+exports.updateCartItemQuantity = asyncHandler(async (req, res, next) => {
+  const { quantity } = req.body;
 
-        const cart = await Cart.findOne({
-            user: req.user._id,
-        });
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  });
 
-        if (!cart) {
-            return next(
-                new ApiError(
-                    `There is no cart for user ${req.user._id}`,
-                    404,
-                ),
-            );
-        }
+  if (!cart) {
+    return next(new ApiError(`There is no cart for user ${req.user._id}`, 404));
+  }
 
-        const itemIndex = cart.cartItems.findIndex(
-            (item) =>
-                item._id.toString() === req.params.itemId,
-        );
+  const itemIndex = cart.cartItems.findIndex(
+    (item) => item._id.toString() === req.params.itemId,
+  );
 
-        if (itemIndex > -1) {
-            const cartItem = cart.cartItems[itemIndex];
+  if (itemIndex > -1) {
+    const cartItem = cart.cartItems[itemIndex];
 
-            cartItem.quantity = quantity;
+    cartItem.quantity = quantity;
 
-            cart.cartItems[itemIndex] = cartItem;
-        } else {
-            return next(
-                new ApiError(
-                    `There is no item for this id : ${req.params.itemId}`,
-                    404,
-                ),
-            );
-        }
+    cart.cartItems[itemIndex] = cartItem;
+  } else {
+    return next(
+      new ApiError(`There is no item for this id : ${req.params.itemId}`, 404),
+    );
+  }
 
-        calcTotalCartPrice(cart);
+  calcTotalCartPrice(cart);
 
-        await cart.save();
+  await cart.save();
 
-        // Populate product data for frontend
-        await cart.populate("cartItems.product");
+  // Populate product data for frontend
+  await cart.populate("cartItems.product");
 
-        res.status(200).json({
-            status: "success",
-            numOfCartItems: cart.cartItems.length,
-            data: cart,
-        });
-    },
-);
+  res.status(200).json({
+    status: "success",
+    numOfCartItems: cart.cartItems.length,
+    data: cart,
+  });
+});
 
 /**
  *  @desc    Apply coupon on logged user cart
@@ -251,53 +229,47 @@ exports.updateCartItemQuantity = asyncHandler(
  *  @access  private
  */
 exports.applyCoupon = asyncHandler(async (req, res, next) => {
-    // Get coupon based on coupon name
-    const coupon = await Coupon.findOne({
-        name: req.body.coupon,
-        expire: {
-            $gt: Date.now(),
-        },
-    });
+  // Get coupon based on coupon name
+  const coupon = await Coupon.findOne({
+    name: req.body.coupon,
+    expire: {
+      $gt: Date.now(),
+    },
+  });
 
-    if (!coupon) {
-        return next(
-            new ApiError("Coupon is invalid or expired", 400),
-        );
-    }
+  if (!coupon) {
+    return next(new ApiError("Coupon is invalid or expired", 400));
+  }
 
-    // Get logged user cart
-    const cart = await Cart.findOne({
-        user: req.user._id,
-    });
+  // Get logged user cart
+  const cart = await Cart.findOne({
+    user: req.user._id,
+  });
 
-    if (!cart) {
-        return next(
-            new ApiError(
-                `There is no cart for this user id : ${req.user._id}`,
-                404,
-            ),
-        );
-    }
+  if (!cart) {
+    return next(
+      new ApiError(`There is no cart for this user id : ${req.user._id}`, 404),
+    );
+  }
 
-    const totalPrice = cart.totalCartPrice;
+  const totalPrice = cart.totalCartPrice;
 
-    // Calculate price after coupon discount
-    const totalPriceAfterDiscount = (
-        totalPrice -
-        (totalPrice * coupon.discount) / 100
-    ).toFixed(2);
+  // Calculate price after coupon discount
+  const totalPriceAfterDiscount = (
+    totalPrice -
+    (totalPrice * coupon.discount) / 100
+  ).toFixed(2);
 
-    cart.totalPriceAfterDiscount =
-        totalPriceAfterDiscount;
+  cart.totalPriceAfterDiscount = totalPriceAfterDiscount;
 
-    await cart.save();
+  await cart.save();
 
-    // Populate product data for frontend
-    await cart.populate("cartItems.product");
+  // Populate product data for frontend
+  await cart.populate("cartItems.product");
 
-    res.status(200).json({
-        status: "success",
-        numOfCartItems: cart.cartItems.length,
-        data: cart,
-    });
+  res.status(200).json({
+    status: "success",
+    numOfCartItems: cart.cartItems.length,
+    data: cart,
+  });
 });

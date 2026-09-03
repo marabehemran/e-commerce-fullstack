@@ -36,7 +36,20 @@ const productSchema = new mongoose.Schema(
     priceAfterDiscount: {
       type: Number,
     },
-    colors: [String],
+    colors: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        value: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+      },
+    ],
     imageCover: {
       type: String,
       required: [true, "product image cover is required"],

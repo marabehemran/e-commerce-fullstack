@@ -2,29 +2,28 @@ const asyncHandler = require("express-async-handler");
 const { v4: uuidv4 } = require("uuid");
 const sharp = require("sharp");
 
-const factory = require('./handlersFactory');
-const {uploadSingleImage}=require("../middlewares/uploadImageMiddleware")
-const Brand = require('../models/brandModel');
-
+const factory = require("./handlersFactory");
+const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
+const Brand = require("../models/brandModel");
 
 //upload single image
 exports.uploadBrandImage = uploadSingleImage("image");
 
-//image processing 
+//image processing
 exports.resizeImage = asyncHandler(async (req, res, next) => {
-    if (req.file) {
-        const filename = `brand-${uuidv4()}-${Date.now()}.jpeg`;
+  if (req.file) {
+    const filename = `brand-${uuidv4()}-${Date.now()}.jpeg`;
 
-        await sharp(req.file.buffer)
-            .resize(600, 600)
-            .toFormat("jpeg")
-            .jpeg({ quality: 90 })
-            .toFile(`uploads/brands/${filename}`);
+    await sharp(req.file.buffer)
+      .resize(600, 600)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`uploads/brands/${filename}`);
 
-        req.body.image = filename;
-    }
+    req.body.image = filename;
+  }
 
-    next();
+  next();
 });
 
 /**
@@ -43,7 +42,6 @@ exports.getBrands = factory.getAll(Brand);
  */
 exports.getBrand = factory.getOne(Brand);
 
-
 /**
  *  @desc    Create brand
  *  @route   /api/v1/brands
@@ -59,7 +57,6 @@ exports.createBrand = factory.createOne(Brand);
  *  @access  private
  */
 exports.updateBrand = factory.updateOne(Brand);
-
 
 /**
  *  @desc    Delete brand by id

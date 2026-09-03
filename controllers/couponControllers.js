@@ -1,5 +1,5 @@
-const factory = require('./handlersFactory');
-const Coupon = require('../models/couponModel');
+const factory = require("./handlersFactory");
+const Coupon = require("../models/couponModel");
 
 /**
  *  @desc    Get all coupons
@@ -17,7 +17,6 @@ exports.getCoupons = factory.getAll(Coupon);
  */
 exports.getCoupon = factory.getOne(Coupon);
 
-
 /**
  *  @desc     Create coupon
  *  @route   /api/v1/coupons
@@ -33,7 +32,6 @@ exports.createCoupon = factory.createOne(Coupon);
  *  @access  private
  */
 exports.updateCoupon = factory.updateOne(Coupon);
-
 
 /**
  *  @desc    Delete specific coupon

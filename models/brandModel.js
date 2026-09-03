@@ -1,21 +1,22 @@
 const mongoose = require("mongoose");
 
-const brandSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Brand requored"],
-    unique: [true, "Brand must be unique"],
-    minlength: [3, "Too short Brand name"],
-    maxlength: [32, "To long Brand name"],
+const brandSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Brand requored"],
+      unique: [true, "Brand must be unique"],
+      minlength: [3, "Too short Brand name"],
+      maxlength: [32, "To long Brand name"],
+    },
+    slug: {
+      type: String,
+      lowercase: true,
+    },
+    image: String,
   },
-  slug:{
-    type:String,
-    lowercase:true,
-  },
-  image:String
-
-},{timestamps:true});
-
+  { timestamps: true },
+);
 
 const setImageURL = (doc) => {
   if (doc.image) {

@@ -7,17 +7,17 @@ const {
 } = require("../utils/validators/productValidator");
 
 const {
-    getProducts,
-    getProduct,
-    createProduct,
-    updateProduct,
-    deleteProduct,
-    uploadProductImages,
-    resizeProductImages,
-    prepareProductUpdateData,
+  getProducts,
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  uploadProductImages,
+  resizeProductImages,
+  prepareProductData,
 } = require("../controllers/productController");
 
-const reviewRoute=require("./reviewRoute")
+const reviewRoute = require("./reviewRoute");
 const authService = require("../controllers/authController");
 
 const router = express.Router();
@@ -27,7 +27,6 @@ const router = express.Router();
 // /products/6a4cd446990eb55b6f0f5072/reviews
 router.use("/:productId/reviews", reviewRoute);
 
-
 router
   .route("/")
   .get(getProducts)
@@ -36,6 +35,7 @@ router
     authService.allowedTo("admin", "manager"),
     uploadProductImages,
     resizeProductImages,
+    prepareProductData,
     createProductValidator,
     createProduct,
   );
@@ -46,13 +46,14 @@ router
     authService.protect,
     authService.allowedTo("admin", "manager"),
     uploadProductImages,
-      resizeProductImages, prepareProductUpdateData,
+    resizeProductImages,
+    prepareProductData,
     updateProductValidator,
     updateProduct,
   )
   .delete(
     authService.protect,
-      authService.allowedTo("admin", "manager"),
+    authService.allowedTo("admin", "manager"),
     deleteProductValidator,
     deleteProduct,
   );

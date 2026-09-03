@@ -22,10 +22,9 @@ exports.resizeImage = asyncHandler(async (req, res, next) => {
       .toFile(`uploads/categories/${filename}`);
 
     req.body.image = filename;
-    }
+  }
 
-    next();
-
+  next();
 });
 
 /**

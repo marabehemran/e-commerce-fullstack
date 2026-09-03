@@ -15,93 +15,85 @@ const User = require("../models/userModel");
  * @access  Private/User
  */
 exports.createCashOrder = asyncHandler(async (req, res, next) => {
-    const taxPrice = 0;
-    const shippingPrice = 0;
+  const taxPrice = 0;
+  const shippingPrice = 0;
 
-    // Get cart
-    const cart = await Cart.findById(req.params.cartId);
+  // Get cart
+  const cart = await Cart.findById(req.params.cartId);
 
-    if (!cart) {
-        return next(
-            new ApiError(
-                `There is no such cart with id ${req.params.cartId}`,
-                404,
-            ),
-        );
-    }
+  if (!cart) {
+    return next(
+      new ApiError(`There is no such cart with id ${req.params.cartId}`, 404),
+    );
+  }
 
-    // Make sure cart belongs to logged user
-    if (cart.user.toString() !== req.user._id.toString()) {
-        return next(
-            new ApiError("You are not allowed to access this cart", 403),
-        );
-    }
+  // Make sure cart belongs to logged user
+  if (cart.user.toString() !== req.user._id.toString()) {
+    return next(new ApiError("You are not allowed to access this cart", 403));
+  }
 
-    // Get cart price
-    const cartPrice =
-        cart.totalPriceAfterDiscount !== undefined
-            ? cart.totalPriceAfterDiscount
-            : cart.totalCartPrice;
+  // Get cart price
+  const cartPrice =
+    cart.totalPriceAfterDiscount !== undefined
+      ? cart.totalPriceAfterDiscount
+      : cart.totalCartPrice;
 
-    const totalOrderPrice =
-        Number(cartPrice) + taxPrice + shippingPrice;
+  const totalOrderPrice = Number(cartPrice) + taxPrice + shippingPrice;
 
-    // Create order
-    const order = await Order.create({
-        user: req.user._id,
+  // Create order
+  const order = await Order.create({
+    user: req.user._id,
 
-        cartItems: cart.cartItems,
+    cartItems: cart.cartItems,
 
-        shippingAddress: req.body.shippingAddress,
+    shippingAddress: req.body.shippingAddress,
 
-        totalOrderPrice,
+    totalOrderPrice,
 
-        paymentMethodType: "cash",
-    });
+    paymentMethodType: "cash",
+  });
 
-    if (order) {
-        // Update product quantity and sold
-        const bulkOption = cart.cartItems.map((item) => ({
-            updateOne: {
-                filter: {
-                    _id: item.product,
-                },
+  if (order) {
+    // Update product quantity and sold
+    const bulkOption = cart.cartItems.map((item) => ({
+      updateOne: {
+        filter: {
+          _id: item.product,
+        },
 
-                update: {
-                    $inc: {
-                        quantity: -item.quantity,
-                        sold: item.quantity,
-                    },
-                },
-            },
-        }));
+        update: {
+          $inc: {
+            quantity: -item.quantity,
+            sold: item.quantity,
+          },
+        },
+      },
+    }));
 
-        await Product.bulkWrite(bulkOption, {});
+    await Product.bulkWrite(bulkOption, {});
 
-        // Remove cart after creating order
-        await Cart.findByIdAndDelete(req.params.cartId);
-    }
+    // Remove cart after creating order
+    await Cart.findByIdAndDelete(req.params.cartId);
+  }
 
-    res.status(201).json({
-        status: "success",
-        data: order,
-    });
+  res.status(201).json({
+    status: "success",
+    data: order,
+  });
 });
 
 /**
  * @desc    Filter orders for logged user
  */
-exports.filterOrderForLoggedUser = asyncHandler(
-    async (req, res, next) => {
-        if (req.user.role === "user") {
-            req.filterObj = {
-                user: req.user._id,
-            };
-        }
+exports.filterOrderForLoggedUser = asyncHandler(async (req, res, next) => {
+  if (req.user.role === "user") {
+    req.filterObj = {
+      user: req.user._id,
+    };
+  }
 
-        next();
-    },
-);
+  next();
+});
 
 /**
  * @desc    Get all orders
@@ -109,35 +101,35 @@ exports.filterOrderForLoggedUser = asyncHandler(
  * @access  Private
  */
 exports.findAllOrders = asyncHandler(async (req, res) => {
-    const keyword = req.query.keyword?.trim();
+  const keyword = req.query.keyword?.trim();
 
-    let filter = {};
+  let filter = {};
 
-    if (req.filterObj) {
-        filter = { ...req.filterObj };
-    }
+  if (req.filterObj) {
+    filter = { ...req.filterObj };
+  }
 
-    if (keyword) {
-        const users = await User.find({
-            name: {
-                $regex: keyword,
-                $options: "i",
-            },
-        }).select("_id");
+  if (keyword) {
+    const users = await User.find({
+      name: {
+        $regex: keyword,
+        $options: "i",
+      },
+    }).select("_id");
 
-        const userIds = users.map((user) => user._id);
+    const userIds = users.map((user) => user._id);
 
-        filter.user = {
-            $in: userIds,
-        };
-    }
+    filter.user = {
+      $in: userIds,
+    };
+  }
 
-    const orders = await Order.find(filter).sort("-createdAt");
+  const orders = await Order.find(filter).sort("-createdAt");
 
-    res.status(200).json({
-        results: orders.length,
-        data: orders,
-    });
+  res.status(200).json({
+    results: orders.length,
+    data: orders,
+  });
 });
 
 /**
@@ -145,314 +137,255 @@ exports.findAllOrders = asyncHandler(async (req, res) => {
  * @route   GET /api/v1/orders/:id
  * @access  Private
  */
-exports.findSpecificOrder = asyncHandler(
-    async (req, res, next) => {
-        const order = await Order.findById(req.params.id);
+exports.findSpecificOrder = asyncHandler(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
 
-        if (!order) {
-            return next(
-                new ApiError(
-                    `There is no such order with id ${req.params.id}`,
-                    404,
-                ),
-            );
-        }
+  if (!order) {
+    return next(
+      new ApiError(`There is no such order with id ${req.params.id}`, 404),
+    );
+  }
 
-        // Normal user can only see his own order
-        if (
-            req.user.role === "user" &&
-            order.user._id.toString() !== req.user._id.toString()
-        ) {
-            return next(
-                new ApiError(
-                    "You are not allowed to access this order",
-                    403,
-                ),
-            );
-        }
+  // Normal user can only see his own order
+  if (
+    req.user.role === "user" &&
+    order.user._id.toString() !== req.user._id.toString()
+  ) {
+    return next(new ApiError("You are not allowed to access this order", 403));
+  }
 
-        res.status(200).json({
-            status: "success",
-            data: order,
-        });
-    },
-);
+  res.status(200).json({
+    status: "success",
+    data: order,
+  });
+});
 
 /**
  * @desc    Update order to paid
  * @route   PUT /api/v1/orders/:id/pay
  * @access  Private/Admin/Manager
  */
-exports.updateOrderToPaid = asyncHandler(
-    async (req, res, next) => {
-        const order = await Order.findById(req.params.id);
+exports.updateOrderToPaid = asyncHandler(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
 
-        if (!order) {
-            return next(
-                new ApiError(
-                    `There is no such order with id ${req.params.id}`,
-                    404,
-                ),
-            );
-        }
+  if (!order) {
+    return next(
+      new ApiError(`There is no such order with id ${req.params.id}`, 404),
+    );
+  }
 
-        order.isPaid = true;
-        order.paidAt = Date.now();
+  order.isPaid = true;
+  order.paidAt = Date.now();
 
-        const updatedOrder = await order.save();
+  const updatedOrder = await order.save();
 
-        res.status(200).json({
-            status: "success",
-            data: updatedOrder,
-        });
-    },
-);
+  res.status(200).json({
+    status: "success",
+    data: updatedOrder,
+  });
+});
 
 /**
  * @desc    Update order to delivered
  * @route   PUT /api/v1/orders/:id/deliver
  * @access  Private/Admin/Manager
  */
-exports.updateOrderToDelivered = asyncHandler(
-    async (req, res, next) => {
-        const order = await Order.findById(req.params.id);
+exports.updateOrderToDelivered = asyncHandler(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
 
-        if (!order) {
-            return next(
-                new ApiError(
-                    `There is no such order with id ${req.params.id}`,
-                    404,
-                ),
-            );
-        }
+  if (!order) {
+    return next(
+      new ApiError(`There is no such order with id ${req.params.id}`, 404),
+    );
+  }
 
-        order.isDelivered = true;
-        order.deliveredAt = Date.now();
+  order.isDelivered = true;
+  order.deliveredAt = Date.now();
 
-        const updatedOrder = await order.save();
+  const updatedOrder = await order.save();
 
-        res.status(200).json({
-            status: "success",
-            data: updatedOrder,
-        });
-    },
-);
+  res.status(200).json({
+    status: "success",
+    data: updatedOrder,
+  });
+});
 
 /**
  * @desc    Create Stripe test checkout session
  * @route   POST /api/v1/orders/checkout-session/:cartId
  * @access  Private/User
  */
-exports.checkoutSession = asyncHandler(
-    async (req, res, next) => {
-        const taxPrice = 0;
-        const shippingPrice = 0;
+exports.checkoutSession = asyncHandler(async (req, res, next) => {
+  const taxPrice = 0;
+  const shippingPrice = 0;
 
-        // Get cart
-        const cart = await Cart.findById(req.params.cartId);
+  // Get cart
+  const cart = await Cart.findById(req.params.cartId);
 
-        if (!cart) {
-            return next(
-                new ApiError(
-                    `There is no such cart with id ${req.params.cartId}`,
-                    404,
-                ),
-            );
-        }
+  if (!cart) {
+    return next(
+      new ApiError(`There is no such cart with id ${req.params.cartId}`, 404),
+    );
+  }
 
-        // Make sure cart belongs to logged user
-        if (cart.user.toString() !== req.user._id.toString()) {
-            return next(
-                new ApiError("You are not allowed to access this cart", 403),
-            );
-        }
+  // Make sure cart belongs to logged user
+  if (cart.user.toString() !== req.user._id.toString()) {
+    return next(new ApiError("You are not allowed to access this cart", 403));
+  }
 
-        // Get cart price
-        const cartPrice =
-            cart.totalPriceAfterDiscount !== undefined
-                ? cart.totalPriceAfterDiscount
-                : cart.totalCartPrice;
+  // Get cart price
+  const cartPrice =
+    cart.totalPriceAfterDiscount !== undefined
+      ? cart.totalPriceAfterDiscount
+      : cart.totalCartPrice;
 
-        const totalOrderPrice =
-            Number(cartPrice) + taxPrice + shippingPrice;
+  const totalOrderPrice = Number(cartPrice) + taxPrice + shippingPrice;
 
-        // Create Stripe test checkout session
-        const session = await stripe.checkout.sessions.create({
-            line_items: [
-                {
-                    price_data: {
-                        currency: "usd",
+  // Create Stripe test checkout session
+  const session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
 
-                        product_data: {
-                            name: `Order for ${req.user.name}`,
-                        },
+          product_data: {
+            name: `Order for ${req.user.name}`,
+          },
 
-                        unit_amount: Math.round(totalOrderPrice * 100),
-                        unit_amount: Math.round(totalOrderPrice * 100),
-                    },
+          unit_amount: Math.round(totalOrderPrice * 100),
+          unit_amount: Math.round(totalOrderPrice * 100),
+        },
 
-                    quantity: 1,
-                },
-            ],
+        quantity: 1,
+      },
+    ],
 
-            mode: "payment",
+    mode: "payment",
 
-            success_url:
-                `http://localhost:5173/order/card-success?session_id={CHECKOUT_SESSION_ID}&cart_id=${req.params.cartId}`,
-            cancel_url:
-                "http://localhost:5173/cart",
+    success_url: `http://localhost:5173/order/card-success?session_id={CHECKOUT_SESSION_ID}&cart_id=${req.params.cartId}`,
+    cancel_url: "http://localhost:5173/cart",
 
-            customer_email: req.user.email,
+    customer_email: req.user.email,
 
-            client_reference_id: req.params.cartId,
+    client_reference_id: req.params.cartId,
 
-            metadata: {
-                details:
-                    req.body.shippingAddress?.details || "",
+    metadata: {
+      details: req.body.shippingAddress?.details || "",
 
-                phone:
-                    req.body.shippingAddress?.phone || "",
+      phone: req.body.shippingAddress?.phone || "",
 
-                city:
-                    req.body.shippingAddress?.city || "",
+      city: req.body.shippingAddress?.city || "",
 
-                postalCode:
-                    req.body.shippingAddress?.postalCode || "",
-            },
-        });
-
-        res.status(200).json({
-            status: "success",
-            session,
-        });
+      postalCode: req.body.shippingAddress?.postalCode || "",
     },
-);
+  });
+
+  res.status(200).json({
+    status: "success",
+    session,
+  });
+});
 
 /**
  * @desc    Create card order after successful Stripe test payment
  * @route   POST /api/v1/orders/card/:cartId
  * @access  Private/User
  */
-exports.createCardOrder = asyncHandler(
-    async (req, res, next) => {
-        const { sessionId } = req.body;
+exports.createCardOrder = asyncHandler(async (req, res, next) => {
+  const { sessionId } = req.body;
 
-        if (!sessionId) {
-            return next(
-                new ApiError("Stripe session id is required", 400),
-            );
-        }
+  if (!sessionId) {
+    return next(new ApiError("Stripe session id is required", 400));
+  }
 
-        // Ask Stripe about this checkout session
-        const session =
-            await stripe.checkout.sessions.retrieve(sessionId);
+  // Ask Stripe about this checkout session
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-        // Make sure Stripe says payment succeeded
-        if (session.payment_status !== "paid") {
-            return next(
-                new ApiError(
-                    "Payment has not been completed successfully",
-                    400,
-                ),
-            );
-        }
+  // Make sure Stripe says payment succeeded
+  if (session.payment_status !== "paid") {
+    return next(
+      new ApiError("Payment has not been completed successfully", 400),
+    );
+  }
 
-        // Make sure this Stripe session belongs to this cart
-        if (
-            session.client_reference_id !== req.params.cartId
-        ) {
-            return next(
-                new ApiError(
-                    "Stripe session does not belong to this cart",
-                    400,
-                ),
-            );
-        }
+  // Make sure this Stripe session belongs to this cart
+  if (session.client_reference_id !== req.params.cartId) {
+    return next(
+      new ApiError("Stripe session does not belong to this cart", 400),
+    );
+  }
 
-        // Get cart
-        const cart = await Cart.findById(req.params.cartId);
+  // Get cart
+  const cart = await Cart.findById(req.params.cartId);
 
-        if (!cart) {
-            return next(
-                new ApiError(
-                    `There is no such cart with id ${req.params.cartId}`,
-                    404,
-                ),
-            );
-        }
+  if (!cart) {
+    return next(
+      new ApiError(`There is no such cart with id ${req.params.cartId}`, 404),
+    );
+  }
 
-        // Make sure cart belongs to logged user
-        if (cart.user.toString() !== req.user._id.toString()) {
-            return next(
-                new ApiError(
-                    "You are not allowed to access this cart",
-                    403,
-                ),
-            );
-        }
+  // Make sure cart belongs to logged user
+  if (cart.user.toString() !== req.user._id.toString()) {
+    return next(new ApiError("You are not allowed to access this cart", 403));
+  }
 
-        const cartPrice =
-            cart.totalPriceAfterDiscount !== undefined
-                ? cart.totalPriceAfterDiscount
-                : cart.totalCartPrice;
+  const cartPrice =
+    cart.totalPriceAfterDiscount !== undefined
+      ? cart.totalPriceAfterDiscount
+      : cart.totalCartPrice;
 
-        const totalOrderPrice = Number(cartPrice);
+  const totalOrderPrice = Number(cartPrice);
 
-        // Create paid card order
-        const order = await Order.create({
-            user: req.user._id,
+  // Create paid card order
+  const order = await Order.create({
+    user: req.user._id,
 
-            cartItems: cart.cartItems,
+    cartItems: cart.cartItems,
 
-            shippingAddress: {
-                details:
-                    session.metadata?.details || "",
+    shippingAddress: {
+      details: session.metadata?.details || "",
 
-                phone:
-                    session.metadata?.phone || "",
+      phone: session.metadata?.phone || "",
 
-                city:
-                    session.metadata?.city || "",
+      city: session.metadata?.city || "",
 
-                postalCode:
-                    session.metadata?.postalCode || "",
-            },
-
-            totalOrderPrice,
-
-            paymentMethodType: "card",
-
-            isPaid: true,
-
-            paidAt: Date.now(),
-        });
-
-        if (order) {
-            // Update product quantity and sold
-            const bulkOption = cart.cartItems.map((item) => ({
-                updateOne: {
-                    filter: {
-                        _id: item.product,
-                    },
-
-                    update: {
-                        $inc: {
-                            quantity: -item.quantity,
-                            sold: item.quantity,
-                        },
-                    },
-                },
-            }));
-
-            await Product.bulkWrite(bulkOption, {});
-
-            // Remove cart after creating order
-            await Cart.findByIdAndDelete(req.params.cartId);
-        }
-
-        res.status(201).json({
-            status: "success",
-            data: order,
-        });
+      postalCode: session.metadata?.postalCode || "",
     },
-);
+
+    totalOrderPrice,
+
+    paymentMethodType: "card",
+
+    isPaid: true,
+
+    paidAt: Date.now(),
+  });
+
+  if (order) {
+    // Update product quantity and sold
+    const bulkOption = cart.cartItems.map((item) => ({
+      updateOne: {
+        filter: {
+          _id: item.product,
+        },
+
+        update: {
+          $inc: {
+            quantity: -item.quantity,
+            sold: item.quantity,
+          },
+        },
+      },
+    }));
+
+    await Product.bulkWrite(bulkOption, {});
+
+    // Remove cart after creating order
+    await Cart.findByIdAndDelete(req.params.cartId);
+  }
+
+  res.status(201).json({
+    status: "success",
+    data: order,
+  });
+});
