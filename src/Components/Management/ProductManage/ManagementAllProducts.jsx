@@ -32,7 +32,8 @@ function ManagementAllProducts() {
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const [imageCover, setImageCover] = useState(null);
   const [images, setImages] = useState([]);
-  const [color, setColor] = useState("");
+  const [colorName, setColorName] = useState("");
+  const [colorValue, setColorValue] = useState("#000000");
   const [colors, setColors] = useState([]);
   const [createError, setCreateError] = useState(null);
 
@@ -95,19 +96,30 @@ function ManagementAllProducts() {
   };
 
   const handleAddColor = () => {
-    if (!color.trim()) {
+    if (!colorName.trim()) {
       return;
     }
 
-    if (!colors.includes(color)) {
-      setColors([...colors, color]);
+    const colorExists = colors.some(
+      (item) => item.name.toLowerCase() === colorName.trim().toLowerCase(),
+    );
+
+    if (!colorExists) {
+      setColors([
+        ...colors,
+        {
+          name: colorName.trim(),
+          value: colorValue,
+        },
+      ]);
     }
 
-    setColor("");
+    setColorName("");
+    setColorValue("#000000");
   };
 
   const handleRemoveColor = (colorToRemove) => {
-    setColors(colors.filter((item) => item !== colorToRemove));
+    setColors(colors.filter((item) => item.value !== colorToRemove.value));
   };
 
   const resetForm = () => {
@@ -131,7 +143,9 @@ function ManagementAllProducts() {
 
     setImages([]);
 
-    setColor("");
+    setColorName("");
+
+    setColorValue("#000000");
 
     setColors([]);
 
@@ -183,7 +197,7 @@ function ManagementAllProducts() {
     });
 
     colors.forEach((item) => {
-      formData.append("colors", item);
+      formData.append("colors", JSON.stringify(item));
     });
 
     images.forEach((image) => {
@@ -417,10 +431,17 @@ function ManagementAllProducts() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  placeholder="مثال: Black"
+                  value={colorName}
+                  onChange={(e) => setColorName(e.target.value)}
+                  placeholder="اسم اللون"
                   className="flex-1 rounded-2xl border border-slate-200 p-3.5 outline-none transition focus:border-violet-500 dark:border-slate-700 dark:bg-slate-800"
+                />
+
+                <input
+                  type="color"
+                  value={colorValue}
+                  onChange={(e) => setColorValue(e.target.value)}
+                  className="h-12 w-16 cursor-pointer rounded-xl border border-slate-200 p-1 dark:border-slate-700 dark:bg-slate-800"
                 />
 
                 <button
@@ -436,10 +457,15 @@ function ManagementAllProducts() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {colors.map((item) => (
                     <div
-                      key={item}
+                      key={item.value}
                       className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 dark:bg-slate-800"
                     >
-                      <span>{item}</span>
+                      <span
+                        className="h-5 w-5 rounded-full border border-slate-300"
+                        style={{ backgroundColor: item.value }}
+                      />
+
+                      <span>{item.name}</span>
 
                       <button
                         type="button"

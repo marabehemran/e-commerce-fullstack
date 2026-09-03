@@ -29,7 +29,8 @@ function ManageUpdateProduct() {
   const [brandId, setBrandId] = useState("");
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const [colors, setColors] = useState([]);
-  const [color, setColor] = useState("");
+  const [colorName, setColorName] = useState("");
+  const [colorValue, setColorValue] = useState("#000000");
   const [imageCover, setImageCover] = useState(null);
   const [images, setImages] = useState([]);
   const [updateError, setUpdateError] = useState(null);
@@ -106,21 +107,32 @@ function ManageUpdateProduct() {
   };
 
   const handleAddColor = () => {
-    const newColor = color.trim();
+    const newColorName = colorName.trim();
 
-    if (!newColor) {
+    if (!newColorName) {
       return;
     }
 
-    if (!colors.includes(newColor)) {
-      setColors([...colors, newColor]);
+    const colorExists = colors.some(
+      (item) => item.name.toLowerCase() === newColorName.toLowerCase(),
+    );
+
+    if (!colorExists) {
+      setColors([
+        ...colors,
+        {
+          name: newColorName,
+          value: colorValue,
+        },
+      ]);
     }
 
-    setColor("");
+    setColorName("");
+    setColorValue("#000000");
   };
 
   const handleRemoveColor = (colorToRemove) => {
-    setColors(colors.filter((item) => item !== colorToRemove));
+    setColors(colors.filter((item) => item.value !== colorToRemove.value));
   };
 
   const handleImagesChange = (e) => {
@@ -180,7 +192,7 @@ function ManageUpdateProduct() {
 
     if (colors.length > 0) {
       colors.forEach((item) => {
-        formData.append("colors", item);
+        formData.append("colors", JSON.stringify(item));
       });
     } else {
       formData.append("colors", "");
@@ -231,7 +243,6 @@ function ManageUpdateProduct() {
         className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="grid gap-5 md:grid-cols-2">
-
           {product?.imageCover && (
             <div className="md:col-span-2">
               <label className="mb-2 block font-black">
@@ -245,7 +256,6 @@ function ManageUpdateProduct() {
               />
             </div>
           )}
-
 
           <div className="md:col-span-2">
             <label className="mb-2 block font-black">
@@ -289,7 +299,6 @@ function ManageUpdateProduct() {
             </div>
           )}
 
-
           <div className="md:col-span-2">
             <label className="mb-2 block font-black">
               تغيير الصور الإضافية
@@ -316,7 +325,6 @@ function ManageUpdateProduct() {
             )}
           </div>
 
-
           <div>
             <label className="mb-2 block font-black">اسم المنتج</label>
 
@@ -327,7 +335,6 @@ function ManageUpdateProduct() {
               className="w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
             />
           </div>
-
 
           <div>
             <label className="mb-2 block font-black">الكمية</label>
@@ -341,7 +348,6 @@ function ManageUpdateProduct() {
             />
           </div>
 
-
           <div className="md:col-span-2">
             <label className="mb-2 block font-black">الوصف</label>
 
@@ -351,7 +357,6 @@ function ManageUpdateProduct() {
               className="min-h-32 w-full rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
             />
           </div>
-
 
           <div>
             <label className="mb-2 block font-black">السعر</label>
@@ -377,7 +382,6 @@ function ManageUpdateProduct() {
               placeholder="اختياري"
             />
           </div>
-
 
           <div>
             <label className="mb-2 block font-black">التصنيف</label>
@@ -439,10 +443,17 @@ function ManageUpdateProduct() {
             <div className="flex gap-2">
               <input
                 type="text"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
+                value={colorName}
+                onChange={(e) => setColorName(e.target.value)}
                 className="flex-1 rounded-2xl border border-slate-200 bg-transparent px-4 py-3 outline-none focus:border-violet-500 dark:border-slate-700"
-                placeholder="مثال: Black"
+                placeholder="اسم اللون"
+              />
+
+              <input
+                type="color"
+                value={colorValue}
+                onChange={(e) => setColorValue(e.target.value)}
+                className="h-12 w-16 cursor-pointer rounded-xl border border-slate-200 p-1 dark:border-slate-700 dark:bg-slate-800"
               />
 
               <button
@@ -457,10 +468,15 @@ function ManageUpdateProduct() {
             <div className="mt-3 flex flex-wrap gap-2">
               {colors.map((item) => (
                 <div
-                  key={item}
+                  key={item.value}
                   className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 dark:bg-slate-800"
                 >
-                  <span>{item}</span>
+                  <span
+                    className="h-5 w-5 rounded-full border border-slate-300"
+                    style={{ backgroundColor: item.value }}
+                  />
+
+                  <span>{item.name}</span>
 
                   <button
                     type="button"

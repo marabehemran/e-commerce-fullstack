@@ -1,7 +1,37 @@
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+
+import { addProductToCart } from "../../features/cart/cartSlice";
+
 function ProductDiscription({ product, brands }) {
+  const dispatch = useDispatch();
+
+  const [selectedColor, setSelectedColor] = useState(null);
+
   const brand = brands.find(
     (brand) => brand._id === (product.brand?._id || product.brand),
   );
+
+  useEffect(() => {
+    if (product.colors?.length > 0) {
+      setSelectedColor(product.colors[0]);
+    } else {
+      setSelectedColor(null);
+    }
+  }, [product]);
+
+  const handleAddToCart = async () => {
+    try {
+      await dispatch(
+        addProductToCart({
+          productId: product._id,
+          color: selectedColor?.name,
+        }),
+      ).unwrap();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <div>
@@ -28,14 +58,20 @@ function ProductDiscription({ product, brands }) {
 
         {product.colors?.length > 0 && (
           <div className="mt-3 flex gap-3">
-            {product.colors.map((color, index) => (
+            {product.colors.map((color) => (
               <button
-                key={index}
-                title={color}
+                key={color.value}
+                type="button"
+                title={color.name}
+                onClick={() => setSelectedColor(color)}
                 style={{
-                  backgroundColor: color,
+                  backgroundColor: color.value,
                 }}
-                className="h-9 w-9 rounded-full border border-slate-300 ring-offset-2 first:ring-2 first:ring-violet-600 dark:ring-offset-slate-950"
+                className={`h-9 w-9 cursor-pointer rounded-full border ring-offset-2 transition dark:ring-offset-slate-950 ${
+                  selectedColor?.value === color.value
+                    ? "border-violet-600 ring-2 ring-violet-600"
+                    : "border-slate-300"
+                }`}
               />
             ))}
           </div>
@@ -51,7 +87,11 @@ function ProductDiscription({ product, brands }) {
       </div>
 
       <div className="mt-8 flex flex-wrap items-center gap-5">
-        <button className="shine rounded-2xl bg-slate-950 px-8 py-3.5 font-black text-white hover:bg-violet-700">
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          className="shine cursor-pointer rounded-2xl bg-slate-950 px-8 py-3.5 font-black text-white hover:bg-violet-700"
+        >
           اضف للعربة
         </button>
 
